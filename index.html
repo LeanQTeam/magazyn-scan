@@ -160,7 +160,10 @@ nav button.active{color:var(--accent);border-bottom:2px solid var(--accent);marg
   </svg>
   <h2>MagazynScan</h2>
   <p>Wybierz pracownika aby rozpocząć</p>
-  <div class="worker-list" id="workerList"></div>
+  <select id="workerSelect" style="width:100%;padding:14px 16px;border-radius:12px;border:2px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.15);color:#fff;font-family:var(--f);font-size:16px;font-weight:600;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;text-align:center">
+    <option value="" style="color:#1A1A1A;background:#fff">— wybierz —</option>
+  </select>
+  <button onclick="confirmWorkerSelect()" style="width:100%;padding:14px;background:#fff;color:var(--accent);border:none;border-radius:12px;font-family:var(--f);font-size:16px;font-weight:700;cursor:pointer">Zaloguj</button>
 </div>
 
 <header>
@@ -284,6 +287,10 @@ nav button.active{color:var(--accent);border-bottom:2px solid var(--accent);marg
       <input class="prod-search" id="stockSearch" placeholder="Szukaj produktu..." oninput="renderStock()">
     </div>
   </div>
+  <button class="btn-a am" onclick="exportStockCSV()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Pobierz CSV stanów
+  </button>
   <div class="stock-list" id="stockList"></div>
 </div>
 
@@ -312,6 +319,63 @@ nav button.active{color:var(--accent);border-bottom:2px solid var(--accent);marg
     <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> MAGAZYNY</div>
     <div class="cb"><div class="wh-row" id="whChipsSettings"></div></div>
   </div>
+
+  <!-- PRODUKTY — IMPORT CSV -->
+  <div class="card">
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> IMPORT PRODUKTÓW Z PLIKU CSV</div>
+    <div class="cb">
+      <div class="shint">Wgraj plik CSV z kolumnami (separator: średnik):<br>
+        <strong>Grupa ; Nazwa ; Waga ; Jednostka ; Kod kreskowy</strong><br>
+        Pierwszy wiersz to nagłówek — zostanie pominięty. Istniejące produkty zostaną zaktualizowane, nowe dodane. Historia operacji nie zostanie zmieniona.
+      </div>
+      <button class="btn-a pr" onclick="document.getElementById('csvImportInput').click()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Wybierz plik CSV
+      </button>
+      <input type="file" id="csvImportInput" accept=".csv,.txt" style="display:none" onchange="importProductsCSV(event)">
+      <div class="shint" id="importStatus"></div>
+    </div>
+  </div>
+
+  <!-- PRODUKTY — DODAJ RĘCZNIE -->
+  <div class="card">
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> DODAJ PRODUKT RĘCZNIE</div>
+    <div class="cb">
+      <div>
+        <label class="slabel">Grupa</label>
+        <input class="ti" id="npGroup" placeholder="np. Smakołyki Nuba Candy" style="width:100%">
+      </div>
+      <div>
+        <label class="slabel">Nazwa produktu</label>
+        <input class="ti" id="npName" placeholder="np. Nuba Candy Coconut 1kg" style="width:100%">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label class="slabel">Waga / pojemność</label>
+          <input class="ti" id="npWeight" type="number" placeholder="1" step="0.01" min="0" style="width:100%">
+        </div>
+        <div>
+          <label class="slabel">Jednostka</label>
+          <select class="ti" id="npUnit" style="width:100%">
+            <option value="szt">szt</option>
+            <option value="kg">kg</option>
+            <option value="l">l</option>
+            <option value="g">g</option>
+            <option value="ml">ml</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="slabel">Kod kreskowy (opcjonalnie)</label>
+        <input class="ti" id="npBarcode" placeholder="np. 5901234123457" inputmode="numeric" style="width:100%">
+      </div>
+      <button class="btn-a pr" onclick="addProductManual()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Dodaj produkt
+      </button>
+    </div>
+  </div>
+
   <div class="card">
     <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg> DANE</div>
     <div class="cb">
@@ -371,21 +435,27 @@ let cameraActive = false, scanLoop = null, detector = null;
 
 function loadDB() {
   try { const r = localStorage.getItem('mscan_v4'); if (r) return JSON.parse(r); } catch(e) {}
-  return { warehouses: ['Magazyn A'], workers: ['Pracownik 1'], products: {}, history: [] };
+  return { warehouses: ['Magazyn A'], workers: ['Pracownik 1'], products: {}, history: [], customProducts: [] };
 }
 function saveDB() { localStorage.setItem('mscan_v4', JSON.stringify(db)); updateLocalInfo(); }
 
 // ═══ LOGIN ═══
 function initWorkerScreen() {
-  const list = document.getElementById('workerList');
-  list.innerHTML = '';
+  var sel = document.getElementById('workerSelect');
+  sel.innerHTML = '<option value="" style="color:#1A1A1A;background:#fff">— wybierz —</option>';
   db.workers.forEach(function(w) {
-    const b = document.createElement('button');
-    b.className = 'worker-btn';
-    b.textContent = w;
-    b.onclick = function() { selectWorker(w); };
-    list.appendChild(b);
+    var opt = document.createElement('option');
+    opt.value = w;
+    opt.textContent = w;
+    opt.style.cssText = 'color:#1A1A1A;background:#fff';
+    sel.appendChild(opt);
   });
+}
+function confirmWorkerSelect() {
+  var sel = document.getElementById('workerSelect');
+  var w = sel.value;
+  if (!w) { showToast('Wybierz pracownika z listy'); return; }
+  selectWorker(w);
 }
 function selectWorker(w) {
   currentWorker = w;
@@ -812,6 +882,147 @@ function exportCSV() {
   a.click(); URL.revokeObjectURL(url); showToast('Plik CSV gotowy');
 }
 
+// ═══ CSV STANÓW ═══
+function exportStockCSV() {
+  var stockMap = {};
+  db.history.forEach(function(i) {
+    if (stockWh !== 'all' && i.wh !== stockWh) return;
+    var key = i.name + '||' + (i.group || '') + '||' + (i.unit || 'szt') + '||' + (stockWh === 'all' ? 'WSZYSTKIE' : i.wh);
+    if (!stockMap[key]) stockMap[key] = { name: i.name, group: i.group || '', unit: i.unit || 'szt', wh: stockWh === 'all' ? 'Wszystkie' : i.wh, qty: 0 };
+    stockMap[key].qty += i.qty;
+  });
+  var entries = Object.values(stockMap);
+  entries.sort(function(a,b) { return a.group.localeCompare(b.group) || a.name.localeCompare(b.name); });
+  if (!entries.length) { showToast('Brak danych magazynowych'); return; }
+  var hdr = 'Magazyn;Grupa;Nazwa produktu;Stan;Jednostka\n';
+  var rows = entries.map(function(e) {
+    var sign = e.qty > 0 ? '+' : '';
+    return [e.wh, e.group, e.name, sign + e.qty, e.unit]
+      .map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(';');
+  }).join('\n');
+  var ts = new Date().toISOString().slice(0,10);
+  var blob = new Blob(['\uFEFF' + hdr + rows], {type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'stany_magazyn_' + ts + '.csv';
+  a.click(); URL.revokeObjectURL(url); showToast('CSV stanów gotowy');
+}
+
+// ═══ IMPORT PRODUKTÓW Z CSV ═══
+function importProductsCSV(event) {
+  var file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    // detect encoding — try utf-8 first, already done by FileReader
+    var lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
+    if (lines.length < 2) { showImportStatus('Plik pusty lub niepoprawny format.', true); return; }
+    // skip header row
+    var dataLines = lines.slice(1);
+    var added = 0, updated = 0, errors = 0;
+    dataLines.forEach(function(line) {
+      // split by ; or tab
+      var sep = line.indexOf(';') >= 0 ? ';' : '\t';
+      var cols = line.split(sep).map(function(c) { return c.trim().replace(/^"|"$/g, '').replace(/""/g, '"'); });
+      var group   = cols[0] || '';
+      var name    = cols[1] || '';
+      var weight  = parseFloat(cols[2]) || 1;
+      var unit    = cols[3] || 'szt';
+      var barcode = cols[4] || '';
+      if (!name || !group) { errors++; return; }
+      // generate stable id
+      var pid = 'p_' + Math.abs(hashStr(group + '|' + name)) % 1000000;
+      var gid = 'g_' + Math.abs(hashStr(group)) % 100000;
+      // check if exists in CATALOG (custom products stored in db.customProducts)
+      if (!db.customProducts) db.customProducts = [];
+      var existing = db.customProducts.find(function(p) { return p.id === pid; });
+      if (existing) {
+        existing.name = name; existing.group = group; existing.groupId = gid;
+        existing.weight = weight; existing.unit = unit;
+        if (barcode) existing.barcode = barcode;
+        updated++;
+      } else {
+        db.customProducts.push({ id: pid, name: name, group: group, groupId: gid, weight: weight, unit: unit, barcode: barcode });
+        added++;
+      }
+    });
+    saveDB();
+    rebuildCatalog();
+    var msg = 'Import: dodano ' + added + ', zaktualizowano ' + updated;
+    if (errors) msg += ', pominięto ' + errors + ' (brak nazwy/grupy)';
+    showImportStatus(msg, false);
+    showToast('Import zakończony: ' + (added + updated) + ' produktów');
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function addProductManual() {
+  var group   = document.getElementById('npGroup').value.trim();
+  var name    = document.getElementById('npName').value.trim();
+  var weight  = parseFloat(document.getElementById('npWeight').value) || 1;
+  var unit    = document.getElementById('npUnit').value;
+  var barcode = document.getElementById('npBarcode').value.trim();
+  if (!group) { showToast('Wpisz grupę produktu'); return; }
+  if (!name)  { showToast('Wpisz nazwę produktu'); return; }
+  var pid = 'p_' + Math.abs(hashStr(group + '|' + name)) % 1000000;
+  var gid = 'g_' + Math.abs(hashStr(group)) % 100000;
+  if (!db.customProducts) db.customProducts = [];
+  var existing = db.customProducts.find(function(p) { return p.id === pid; });
+  if (existing) {
+    existing.name = name; existing.group = group; existing.groupId = gid;
+    existing.weight = weight; existing.unit = unit;
+    if (barcode) existing.barcode = barcode;
+    showToast('Produkt zaktualizowany');
+  } else {
+    db.customProducts.push({ id: pid, name: name, group: group, groupId: gid, weight: weight, unit: unit, barcode: barcode });
+    showToast('Dodano: ' + name);
+  }
+  saveDB();
+  rebuildCatalog();
+  // clear form
+  document.getElementById('npGroup').value = '';
+  document.getElementById('npName').value = '';
+  document.getElementById('npWeight').value = '';
+  document.getElementById('npBarcode').value = '';
+}
+
+function rebuildCatalog() {
+  // merge built-in CATALOG with db.customProducts
+  if (!db.customProducts || !db.customProducts.length) return;
+  // add custom products not already in CATALOG
+  db.customProducts.forEach(function(cp) {
+    var existing = CATALOG.products.find(function(p) { return p.id === cp.id; });
+    if (existing) {
+      existing.name = cp.name; existing.group = cp.group; existing.groupId = cp.groupId;
+      existing.weight = cp.weight; existing.unit = cp.unit;
+      if (cp.barcode) existing.barcode = cp.barcode;
+    } else {
+      CATALOG.products.push(cp);
+    }
+    // add group if missing
+    var hasGroup = CATALOG.groups.find(function(g) { return g.id === cp.groupId; });
+    if (!hasGroup) CATALOG.groups.push({ id: cp.groupId, name: cp.group });
+  });
+  // sort groups alphabetically
+  CATALOG.groups.sort(function(a,b) { return a.name.localeCompare(b.name, 'pl'); });
+}
+
+function hashStr(s) {
+  var h = 0;
+  for (var i = 0; i < s.length; i++) { h = Math.imul(31, h) + s.charCodeAt(i) | 0; }
+  return h;
+}
+
+function showImportStatus(msg, isError) {
+  var el = document.getElementById('importStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? 'var(--out)' : '#2D6A3F';
+  el.style.fontWeight = '600';
+}
+
 // ═══ UTILS ═══
 function fmtTime(ts) {
   var d = new Date(ts);
@@ -829,6 +1040,7 @@ function showToast(msg) {
 initWorkerScreen();
 renderWhChips();
 updateHeaderSub();
+rebuildCatalog();
 renderGroupGrid();
 </script>
 </body>
