@@ -9,134 +9,162 @@
 <meta name="theme-color" content="#1A2F5C">
 <title>MagazynScan</title>
 <style>
-  :root {
-    --bg: #F4F2EE; --surface: #FFFFFF; --ink: #1A1A1A; --ink2: #666;
-    --accent: #1A2F5C; --accent2: #E8B020; --border: #DDDAD3;
-    --in-color: #1A2F5C; --out-color: #8B2F1A;
-    --radius: 12px; --shadow: 0 2px 12px rgba(0,0,0,0.08);
-    --font: 'Trebuchet MS','Segoe UI',sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: var(--font); background: var(--bg); color: var(--ink); min-height: 100vh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
-  header { background: var(--accent); color: #fff; padding: 14px 16px 12px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-  header h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
-  .header-sub { font-size: 11px; opacity: 0.65; margin-top: 1px; }
-  nav { display: grid; grid-template-columns: repeat(4,1fr); background: var(--surface); border-bottom: 2px solid var(--border); }
-  nav button { padding: 9px 2px 7px; border: none; background: none; font-family: var(--font); font-size: 10px; font-weight: 600; color: var(--ink2); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; letter-spacing: 0.3px; }
-  nav button svg { width: 19px; height: 19px; }
-  nav button.active { color: var(--accent); border-bottom: 2px solid var(--accent); margin-bottom: -2px; }
-  .screen { display: none; flex: 1; flex-direction: column; padding: 16px; gap: 14px; overflow-y: auto; padding-bottom: 40px; }
-  .screen.active { display: flex; }
-  .card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-  .card-header { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--ink2); display: flex; align-items: center; gap: 6px; }
-  .card-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-  .wh-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .wh-chip { padding: 6px 14px; border-radius: 20px; border: 2px solid var(--border); font-size: 13px; font-weight: 600; font-family: var(--font); background: var(--bg); cursor: pointer; color: var(--ink); transition: all 0.15s; }
-  .wh-chip.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .wh-chip.add-wh { border-style: dashed; color: var(--ink2); font-size: 20px; padding: 2px 12px; }
-  .scan-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .op-btn { padding: 12px; border-radius: var(--radius); border: 2px solid transparent; font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s; }
-  .op-btn.wejscie { background: #EEF2FA; color: var(--in-color); border-color: #C5D0E8; }
-  .op-btn.wejscie.selected { background: var(--in-color); color: #fff; border-color: var(--in-color); }
-  .op-btn.wyjscie { background: #FAF0EE; color: var(--out-color); border-color: #E8C5C0; }
-  .op-btn.wyjscie.selected { background: var(--out-color); color: #fff; border-color: var(--out-color); }
-
-  /* CAMERA */
-  .camera-wrap { position: relative; background: #000; border-radius: var(--radius); overflow: hidden; aspect-ratio: 4/3; display: none; }
-  #video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .scan-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-  .scan-frame { width: 65%; aspect-ratio: 2/1; border: 2px solid var(--accent2); border-radius: 8px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.45); position: relative; overflow: hidden; }
-  .scan-line { position: absolute; left: 4px; right: 4px; height: 2px; background: var(--accent2); animation: scanline 2s linear infinite; top: 4px; }
-  @keyframes scanline { 0%{top:4px;opacity:1}90%{top:calc(100% - 6px);opacity:1}100%{top:calc(100% - 6px);opacity:0} }
-  .cam-hint { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.75); font-size: 11px; font-weight: 600; letter-spacing: 0.3px; }
-
-  .btn-main { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn-main:active { opacity: 0.85; }
-  .btn-stop { width: 100%; padding: 10px; background: var(--border); color: var(--ink2); border: none; border-radius: var(--radius); font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; display: none; }
-  .btn-capture { width: 100%; padding: 12px; background: none; color: var(--accent); border: 2px dashed var(--accent); border-radius: var(--radius); font-family: var(--font); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  #captureInput { display: none; }
-
-  .input-row { display: flex; gap: 8px; }
-  .text-input { flex: 1; padding: 10px 12px; border: 2px solid var(--border); border-radius: var(--radius); font-family: var(--font); font-size: 14px; background: var(--bg); color: var(--ink); outline: none; transition: border-color 0.15s; }
-  .text-input:focus { border-color: var(--accent); }
-  .icon-btn { padding: 10px 14px; border: 2px solid var(--border); border-radius: var(--radius); background: var(--bg); cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: var(--font); font-size: 13px; font-weight: 700; color: var(--accent); }
-
-  .result-flash { border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; border-left: 4px solid var(--accent); animation: flashIn 0.3s ease; }
-  .result-flash.wejscie { border-left-color: var(--in-color); background: #EEF2FA; }
-  .result-flash.wyjscie { border-left-color: var(--out-color); background: #FAF0EE; }
-  @keyframes flashIn { from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)} }
-  .result-code { font-size: 11px; color: var(--ink2); font-weight: 600; letter-spacing: 0.5px; }
-  .result-name { font-size: 17px; font-weight: 700; }
-  .result-meta { font-size: 12px; color: var(--ink2); }
-  .result-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-top: 2px; width: fit-content; }
-  .result-badge.wejscie { background: var(--in-color); color: #fff; }
-  .result-badge.wyjscie { background: var(--out-color); color: #fff; }
-
-  .sync-row { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
-  .sync-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: #ccc; }
-  .sync-dot.ok { background: #2D6A3F; animation: pulse 1.8s ease infinite; }
-  .sync-dot.warn { background: var(--accent2); }
-  .sync-dot.off { background: #ccc; }
-  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.35} }
-
-  .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
-  .modal-backdrop.open { display: flex; }
-  .modal { background: var(--surface); border-radius: 20px 20px 0 0; padding: 24px 20px 36px; width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; animation: slideUp 0.25s ease; max-height: 90vh; overflow-y: auto; }
-  @keyframes slideUp { from{transform:translateY(100%)}to{transform:translateY(0)} }
-  .modal h2 { font-size: 16px; font-weight: 700; }
-  .modal label { font-size: 11px; font-weight: 700; color: var(--ink2); letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 4px; }
-  .modal-code-display { font-size: 13px; padding: 8px 12px; background: var(--bg); border-radius: 8px; font-weight: 600; color: var(--ink2); letter-spacing: 1px; border: 1px solid var(--border); }
-  .btn-primary { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.15s; }
-  .btn-secondary { width: 100%; padding: 12px; background: none; color: var(--ink2); border: 2px solid var(--border); border-radius: var(--radius); font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; }
-  .qty-row { display: flex; align-items: center; gap: 12px; }
-  .qty-row label { flex: 0 0 auto; }
-  .qty-input { width: 80px; padding: 8px 10px; border: 2px solid var(--border); border-radius: var(--radius); font-family: var(--font); font-size: 16px; font-weight: 700; text-align: center; background: var(--bg); color: var(--ink); outline: none; }
-  .qty-input:focus { border-color: var(--accent); }
-
-  .filter-row { display: flex; gap: 6px; flex-wrap: wrap; }
-  .filter-chip { padding: 5px 12px; border-radius: 20px; border: 1.5px solid var(--border); font-size: 12px; font-weight: 600; font-family: var(--font); background: var(--bg); cursor: pointer; color: var(--ink2); transition: all 0.15s; }
-  .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .filter-chip.win.active { background: var(--in-color); border-color: var(--in-color); }
-  .filter-chip.wout.active { background: var(--out-color); border-color: var(--out-color); }
-  .history-list { display: flex; flex-direction: column; gap: 6px; }
-  .history-item { background: var(--surface); border-radius: var(--radius); padding: 10px 14px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow); border-left: 3px solid var(--border); }
-  .history-item.wejscie { border-left-color: var(--in-color); }
-  .history-item.wyjscie { border-left-color: var(--out-color); }
-  .hi-icon { width: 32px; height: 32px; flex-shrink: 0; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-  .hi-icon.wejscie { background: #EEF2FA; }
-  .hi-icon.wyjscie { background: #FAF0EE; }
-  .hi-info { flex: 1; min-width: 0; }
-  .hi-name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hi-code { font-size: 11px; color: var(--ink2); margin-top: 1px; }
-  .hi-meta { text-align: right; flex-shrink: 0; }
-  .hi-time { font-size: 11px; font-weight: 700; color: var(--ink2); }
-  .hi-wh { font-size: 10px; color: var(--ink2); margin-top: 1px; }
-  .product-item { background: var(--surface); border-radius: var(--radius); padding: 12px 14px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow); }
-  .product-icon { width: 36px; height: 36px; background: #EEF2FA; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .product-info { flex: 1; min-width: 0; }
-  .product-name { font-size: 14px; font-weight: 700; }
-  .product-code { font-size: 11px; color: var(--ink2); margin-top: 1px; letter-spacing: 0.5px; }
-  .product-count { font-size: 11px; color: var(--ink2); margin-top: 2px; }
-  .delete-btn { padding: 6px 8px; border: none; background: none; cursor: pointer; color: #ccc; border-radius: 6px; }
-  .delete-btn:active { color: var(--out-color); }
-  .btn-action { width: 100%; padding: 13px; border: none; border-radius: var(--radius); font-family: var(--font); font-size: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn-action.amber { background: var(--accent2); color: #1A1A1A; }
-  .btn-action.outline { background: none; color: var(--accent); border: 2px solid var(--accent); }
-  .btn-action.primary { background: var(--accent); color: #fff; }
-  .btn-action.danger { background: none; color: var(--out-color); border: 2px solid var(--out-color); }
-  .setting-hint { font-size: 11px; color: var(--ink2); line-height: 1.6; }
-  .setting-row label { font-size: 11px; font-weight: 700; color: var(--ink2); letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 4px; }
-  .divider { border: none; border-top: 1px solid var(--border); }
-  .empty-state { text-align: center; padding: 40px 20px; color: var(--ink2); font-size: 14px; line-height: 2; }
-  .empty-state svg { width: 44px; height: 44px; opacity: 0.25; display: block; margin: 0 auto 8px; }
-  #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: #1A1A1A; color: #fff; padding: 10px 22px; border-radius: 20px; font-size: 13px; font-weight: 600; z-index: 300; transition: transform 0.28s ease, opacity 0.28s ease; opacity: 0; white-space: nowrap; pointer-events: none; max-width: 92vw; overflow: hidden; text-overflow: ellipsis; }
-  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+:root {
+  --bg:#F4F2EE;--surface:#FFF;--ink:#1A1A1A;--ink2:#666;
+  --accent:#1A2F5C;--accent2:#E8B020;--border:#DDDAD3;
+  --in:#1A2F5C;--out:#8B2F1A;
+  --r:12px;--sh:0 2px 12px rgba(0,0,0,0.08);
+  --f:'Trebuchet MS','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:var(--f);background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+header{background:var(--accent);color:#fff;padding:12px 16px 10px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+header h1{font-size:17px;font-weight:700;letter-spacing:0.5px}
+.hv{font-size:10px;opacity:0.55;margin-left:4px;font-weight:400}
+.hsub{font-size:10px;opacity:0.6;margin-top:1px}
+nav{display:grid;grid-template-columns:repeat(5,1fr);background:var(--surface);border-bottom:2px solid var(--border)}
+nav button{padding:8px 1px 6px;border:none;background:none;font-family:var(--f);font-size:9px;font-weight:600;color:var(--ink2);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;letter-spacing:0.2px}
+nav button svg{width:18px;height:18px}
+nav button.active{color:var(--accent);border-bottom:2px solid var(--accent);margin-bottom:-2px}
+.screen{display:none;flex:1;flex-direction:column;padding:14px;gap:12px;overflow-y:auto;padding-bottom:40px}
+.screen.active{display:flex}
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.ch{padding:11px 14px;border-bottom:1px solid var(--border);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--ink2);display:flex;align-items:center;gap:5px}
+.cb{padding:14px;display:flex;flex-direction:column;gap:10px}
+.worker-screen{position:fixed;inset:0;background:var(--accent);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:24px}
+.worker-screen h2{color:#fff;font-size:22px;font-weight:700}
+.worker-screen p{color:rgba(255,255,255,0.7);font-size:13px;text-align:center}
+.worker-list{width:100%;display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto}
+.worker-btn{width:100%;padding:14px 18px;background:rgba(255,255,255,0.12);color:#fff;border:2px solid rgba(255,255,255,0.25);border-radius:var(--r);font-family:var(--f);font-size:15px;font-weight:600;cursor:pointer;text-align:left;transition:all 0.15s}
+.worker-btn:active{background:rgba(255,255,255,0.25)}
+.wh-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.chip{padding:5px 13px;border-radius:20px;border:2px solid var(--border);font-size:12px;font-weight:600;font-family:var(--f);background:var(--bg);cursor:pointer;color:var(--ink);transition:all 0.15s}
+.chip.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chip.add{border-style:dashed;color:var(--ink2);font-size:19px;padding:1px 11px}
+.op-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.op-btn{padding:11px;border-radius:var(--r);border:2px solid transparent;font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all 0.15s}
+.op-btn.win{background:#EEF2FA;color:var(--in);border-color:#C5D0E8}
+.op-btn.win.sel{background:var(--in);color:#fff;border-color:var(--in)}
+.op-btn.wout{background:#FAF0EE;color:var(--out);border-color:#E8C5C0}
+.op-btn.wout.sel{background:var(--out);color:#fff;border-color:var(--out)}
+.worker-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface);border-radius:var(--r);box-shadow:var(--sh);font-size:12px}
+.worker-bar strong{color:var(--accent);font-weight:700}
+.worker-bar button{font-size:11px;color:var(--ink2);border:1px solid var(--border);background:var(--bg);border-radius:6px;padding:3px 8px;cursor:pointer;font-family:var(--f)}
+.cam-wrap{position:relative;background:#000;border-radius:var(--r);overflow:hidden;aspect-ratio:4/3;display:none}
+#video{width:100%;height:100%;object-fit:cover;display:block}
+.scan-ov{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.scan-fr{width:65%;aspect-ratio:2/1;border:2px solid var(--accent2);border-radius:8px;box-shadow:0 0 0 9999px rgba(0,0,0,0.45);position:relative;overflow:hidden}
+.scan-ln{position:absolute;left:4px;right:4px;height:2px;background:var(--accent2);animation:scl 2s linear infinite;top:4px}
+@keyframes scl{0%{top:4px;opacity:1}90%{top:calc(100% - 6px);opacity:1}100%{top:calc(100% - 6px);opacity:0}}
+.cam-hint{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:rgba(255,255,255,0.75);font-size:11px;font-weight:600}
+.btn-main{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-family:var(--f);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-main:active{opacity:0.85}
+.btn-stop{width:100%;padding:9px;background:var(--border);color:var(--ink2);border:none;border-radius:var(--r);font-family:var(--f);font-size:12px;font-weight:600;cursor:pointer;display:none}
+.group-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.group-btn{padding:12px 10px;background:var(--surface);border:2px solid var(--border);border-radius:var(--r);font-family:var(--f);font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left;line-height:1.3;transition:all 0.15s}
+.group-btn:active,.group-btn.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
+.prod-search{width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:var(--r);font-family:var(--f);font-size:13px;background:var(--bg);color:var(--ink);outline:none;transition:border-color 0.15s}
+.prod-search:focus{border-color:var(--accent)}
+.prod-list{display:flex;flex-direction:column;gap:4px;max-height:280px;overflow-y:auto}
+.prod-item{padding:10px 12px;background:var(--surface);border-radius:8px;border:1.5px solid var(--border);cursor:pointer;transition:all 0.15s}
+.prod-item:active{border-color:var(--accent);background:#EEF2FA}
+.prod-name{font-size:13px;font-weight:600;color:var(--ink)}
+.prod-meta{font-size:10px;color:var(--ink2);margin-top:2px}
+.back-btn{padding:7px 14px;background:none;border:2px solid var(--border);border-radius:20px;font-family:var(--f);font-size:12px;font-weight:600;color:var(--ink2);cursor:pointer}
+.input-row{display:flex;gap:7px}
+.ti{flex:1;padding:9px 11px;border:2px solid var(--border);border-radius:var(--r);font-family:var(--f);font-size:13px;background:var(--bg);color:var(--ink);outline:none;transition:border-color 0.15s}
+.ti:focus{border-color:var(--accent)}
+.icon-btn{padding:9px 13px;border:2px solid var(--border);border-radius:var(--r);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--f);font-size:12px;font-weight:700;color:var(--accent)}
+.result-flash{border-radius:var(--r);padding:13px 15px;display:flex;flex-direction:column;gap:4px;border-left:4px solid var(--accent);animation:fi 0.3s ease}
+.result-flash.win{border-left-color:var(--in);background:#EEF2FA}
+.result-flash.wout{border-left-color:var(--out);background:#FAF0EE}
+@keyframes fi{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.rc{font-size:10px;color:var(--ink2);font-weight:600;letter-spacing:0.5px}
+.rn{font-size:16px;font-weight:700}
+.rm{font-size:11px;color:var(--ink2)}
+.rb{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.5px;margin-top:2px;width:fit-content}
+.rb.win{background:var(--in);color:#fff}
+.rb.wout{background:var(--out);color:#fff}
+.sync-row{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:#ccc}
+.sdot.ok{background:#2D6A3F;animation:pu 1.8s ease infinite}
+.sdot.warn{background:var(--accent2)}
+.sdot.off{background:#ccc}
+@keyframes pu{0%,100%{opacity:1}50%{opacity:0.35}}
+.modal-bd{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center}
+.modal-bd.open{display:flex}
+.modal{background:var(--surface);border-radius:20px 20px 0 0;padding:22px 18px 34px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:13px;animation:su 0.25s ease;max-height:90vh;overflow-y:auto}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal h2{font-size:15px;font-weight:700}
+.mlabel{font-size:10px;font-weight:700;color:var(--ink2);letter-spacing:0.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+.mcode{font-size:12px;padding:7px 11px;background:var(--bg);border-radius:7px;font-weight:600;color:var(--ink2);letter-spacing:0.5px;border:1px solid var(--border)}
+.btn-p{width:100%;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-family:var(--f);font-size:14px;font-weight:700;cursor:pointer;transition:background 0.15s}
+.btn-s{width:100%;padding:11px;background:none;color:var(--ink2);border:2px solid var(--border);border-radius:var(--r);font-family:var(--f);font-size:13px;font-weight:600;cursor:pointer}
+.qty-row{display:flex;align-items:center;gap:11px}
+.qty-row label{font-size:10px;font-weight:700;color:var(--ink2);letter-spacing:0.5px;text-transform:uppercase;flex:0 0 auto}
+.qi{width:80px;padding:7px 9px;border:2px solid var(--border);border-radius:var(--r);font-family:var(--f);font-size:15px;font-weight:700;text-align:center;background:var(--bg);color:var(--ink);outline:none}
+.qi:focus{border-color:var(--accent)}
+.fr{display:flex;gap:5px;flex-wrap:wrap}
+.fc{padding:4px 11px;border-radius:20px;border:1.5px solid var(--border);font-size:11px;font-weight:600;font-family:var(--f);background:var(--bg);cursor:pointer;color:var(--ink2);transition:all 0.15s}
+.fc.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.fc.fi.active{background:var(--in);border-color:var(--in)}
+.fc.fo.active{background:var(--out);border-color:var(--out)}
+.hi-list{display:flex;flex-direction:column;gap:5px}
+.hi{background:var(--surface);border-radius:var(--r);padding:9px 12px;display:flex;align-items:center;gap:9px;box-shadow:var(--sh);border-left:3px solid var(--border)}
+.hi.win{border-left-color:var(--in)}
+.hi.wout{border-left-color:var(--out)}
+.hii{width:30px;height:30px;flex-shrink:0;border-radius:7px;display:flex;align-items:center;justify-content:center}
+.hii.win{background:#EEF2FA}
+.hii.wout{background:#FAF0EE}
+.hif{flex:1;min-width:0}
+.hin{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hic{font-size:10px;color:var(--ink2);margin-top:1px}
+.him{text-align:right;flex-shrink:0}
+.hit{font-size:10px;font-weight:700;color:var(--ink2)}
+.hiw{font-size:9px;color:var(--ink2);margin-top:1px}
+.stock-list{display:flex;flex-direction:column;gap:5px}
+.stock-item{background:var(--surface);border-radius:var(--r);padding:10px 13px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh)}
+.si-info{flex:1;min-width:0}
+.si-name{font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si-group{font-size:10px;color:var(--ink2);margin-top:1px}
+.si-qty{font-size:18px;font-weight:800;flex-shrink:0;min-width:48px;text-align:right}
+.si-qty.pos{color:var(--in)}
+.si-qty.neg{color:var(--out)}
+.si-qty.zero{color:var(--ink2)}
+.si-unit{font-size:10px;color:var(--ink2);text-align:right;flex-shrink:0;margin-left:3px}
+.slabel{font-size:10px;font-weight:700;color:var(--ink2);letter-spacing:0.5px;text-transform:uppercase;display:block;margin-bottom:3px}
+.shint{font-size:11px;color:var(--ink2);line-height:1.6}
+.btn-a{width:100%;padding:12px;border:none;border-radius:var(--r);font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-a.pr{background:var(--accent);color:#fff}
+.btn-a.am{background:var(--accent2);color:#1A1A1A}
+.btn-a.ou{background:none;color:var(--accent);border:2px solid var(--accent)}
+.btn-a.da{background:none;color:var(--out);border:2px solid var(--out)}
+.divider{border:none;border-top:1px solid var(--border)}
+.empty{text-align:center;padding:36px 18px;color:var(--ink2);font-size:13px;line-height:2}
+.empty svg{width:40px;height:40px;opacity:0.2;display:block;margin:0 auto 8px}
+#toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);background:#1A1A1A;color:#fff;padding:9px 20px;border-radius:20px;font-size:12px;font-weight:600;z-index:300;transition:transform 0.28s ease,opacity 0.28s ease;opacity:0;white-space:nowrap;pointer-events:none;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
+<div class="worker-screen" id="workerScreen">
+  <svg width="48" height="48" viewBox="0 0 32 32" fill="none">
+    <rect x="2" y="9" width="4" height="17" fill="white" opacity="0.9"/>
+    <rect x="8" y="5" width="2" height="21" fill="white" opacity="0.9"/>
+    <rect x="12" y="9" width="3" height="17" fill="white" opacity="0.9"/>
+    <rect x="17" y="5" width="2" height="21" fill="white" opacity="0.9"/>
+    <rect x="21" y="9" width="4" height="17" fill="white" opacity="0.9"/>
+    <rect x="27" y="5" width="3" height="21" fill="white" opacity="0.9"/>
+  </svg>
+  <h2>MagazynScan</h2>
+  <p>Wybierz pracownika aby rozpocząć</p>
+  <div class="worker-list" id="workerList"></div>
+</div>
+
 <header>
-  <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+  <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
     <rect x="2" y="9" width="4" height="17" fill="white" opacity="0.9"/>
     <rect x="8" y="5" width="2" height="21" fill="white" opacity="0.9"/>
     <rect x="12" y="9" width="3" height="17" fill="white" opacity="0.9"/>
@@ -145,8 +173,8 @@
     <rect x="27" y="5" width="3" height="21" fill="white" opacity="0.9"/>
   </svg>
   <div>
-    <h1>MagazynScan</h1>
-    <div class="header-sub" id="headerSub">Wybierz magazyn</div>
+    <h1>MagazynScan <span class="hv">v2.0</span></h1>
+    <div class="hsub" id="headerSub">Wybierz magazyn</div>
   </div>
 </header>
 
@@ -159,235 +187,316 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
     HISTORIA
   </button>
+  <button onclick="showScreen('stock')" id="tab-stock">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="6" height="18" rx="1"/><rect x="9" y="8" width="6" height="13" rx="1"/><rect x="16" y="13" width="6" height="8" rx="1"/></svg>
+    MAGAZYN
+  </button>
   <button onclick="showScreen('products')" id="tab-products">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
     PRODUKTY
   </button>
   <button onclick="showScreen('settings')" id="tab-settings">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-    USTAWIENIA
+    USTAW.
   </button>
 </nav>
 
 <!-- SKANUJ -->
 <div class="screen active" id="screen-scan">
-  <div class="card">
-    <div class="card-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> MAGAZYN</div>
-    <div class="card-body"><div class="wh-row" id="whChips"></div></div>
+  <div class="worker-bar" id="workerBar">
+    <span>Pracownik: <strong id="workerBarName">—</strong></span>
+    <button onclick="logoutWorker()">Zmień</button>
   </div>
   <div class="card">
-    <div class="card-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg> OPERACJA</div>
-    <div class="card-body">
-      <div class="scan-toggle">
-        <button class="op-btn wejscie selected" id="btnWejscie" onclick="setOp('wejscie')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> WEJŚCIE
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> MAGAZYN</div>
+    <div class="cb"><div class="wh-row" id="whChips"></div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg> OPERACJA</div>
+    <div class="cb">
+      <div class="op-toggle">
+        <button class="op-btn win sel" id="btnW" onclick="setOp('wejscie')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg> WEJŚCIE
         </button>
-        <button class="op-btn wyjscie" id="btnWyjscie" onclick="setOp('wyjscie')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> WYJŚCIE
+        <button class="op-btn wout" id="btnO" onclick="setOp('wyjscie')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> WYJŚCIE
         </button>
       </div>
     </div>
   </div>
   <div class="card">
-    <div class="card-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> SKANER</div>
-    <div class="card-body">
-      <div class="camera-wrap" id="cameraWrap">
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> KAMERA / KOD RĘCZNIE</div>
+    <div class="cb">
+      <div class="cam-wrap" id="camWrap">
         <video id="video" autoplay playsinline muted></video>
-        <div class="scan-overlay"><div class="scan-frame"><div class="scan-line"></div></div></div>
+        <div class="scan-ov"><div class="scan-fr"><div class="scan-ln"></div></div></div>
         <div class="cam-hint">Skieruj na kod kreskowy</div>
       </div>
       <button class="btn-main" id="camStartBtn" onclick="startCamera()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
         Uruchom kamerę
       </button>
       <button class="btn-stop" id="camStopBtn" onclick="stopCamera()">Zatrzymaj kamerę</button>
-      <button class="btn-capture" onclick="document.getElementById('captureInput').click()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="5"/></svg>
-        Zrób zdjęcie i dekoduj (backup)
-      </button>
-      <input type="file" id="captureInput" accept="image/*" capture="environment" onchange="handleCapture(event)">
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> WPISZ KOD RĘCZNIE</div>
-    <div class="card-body">
       <div class="input-row">
-        <input class="text-input" id="manualInput" placeholder="np. 5901234123457" type="text" inputmode="numeric" onkeydown="if(event.key==='Enter')handleManualScan()">
-        <button class="icon-btn" onclick="handleManualScan()">OK</button>
+        <input class="ti" id="manualInput" placeholder="Wpisz kod kreskowy..." type="text" inputmode="numeric" onkeydown="if(event.key==='Enter')handleManual()">
+        <button class="icon-btn" onclick="handleManual()">OK</button>
       </div>
     </div>
   </div>
-  <div id="scanResult" style="display:none;"></div>
-  <div class="card" id="syncStatusCard" style="display:none;">
-    <div class="card-body"><div class="sync-row"><div class="sync-dot off" id="syncDot"></div><span id="syncStatusText">Sheets: nie skonfigurowano</span></div></div>
+  <div class="card">
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> WYBIERZ PRODUKT</div>
+    <div class="cb">
+      <input class="prod-search" id="prodSearch" placeholder="Szukaj nazwy produktu..." oninput="filterProducts()">
+      <div id="groupGrid" class="group-grid"></div>
+      <div class="prod-list" id="prodList" style="display:none"></div>
+      <button class="back-btn" id="backBtn" style="display:none;align-self:flex-start" onclick="showGroups()">&#8592; Powrót do grup</button>
+    </div>
   </div>
+  <div id="scanResult" style="display:none"></div>
 </div>
 
 <!-- HISTORIA -->
 <div class="screen" id="screen-history">
   <div class="card">
-    <div class="card-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> FILTRUJ</div>
-    <div class="card-body">
-      <div class="filter-row" id="whFilterChips"></div>
-      <div class="filter-row">
-        <button class="filter-chip active" id="fAll" onclick="setOpFilter('all')">Wszystkie</button>
-        <button class="filter-chip win" id="fWejscie" onclick="setOpFilter('wejscie')">Wejście</button>
-        <button class="filter-chip wout" id="fWyjscie" onclick="setOpFilter('wyjscie')">Wyjście</button>
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> FILTRUJ</div>
+    <div class="cb">
+      <div class="fr" id="whFilterChips"></div>
+      <div class="fr">
+        <button class="fc active" id="fAll" onclick="setOpF('all')">Wszystkie</button>
+        <button class="fc fi" id="fWej" onclick="setOpF('wejscie')">Wejście</button>
+        <button class="fc fo" id="fWyj" onclick="setOpF('wyjscie')">Wyjście</button>
       </div>
     </div>
   </div>
-  <button class="btn-action amber" onclick="sendCsvByEmail()">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-    Wyślij CSV mailem
-  </button>
-  <button class="btn-action outline" onclick="exportCSV()">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  <button class="btn-a am" onclick="exportCSV()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
     Pobierz CSV
   </button>
-  <div class="history-list" id="historyList"></div>
+  <div class="hi-list" id="histList"></div>
+</div>
+
+<!-- STAN MAGAZYNOWY -->
+<div class="screen" id="screen-stock">
+  <div class="card">
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg> FILTRUJ</div>
+    <div class="cb">
+      <div class="fr" id="stockWhChips"></div>
+      <input class="prod-search" id="stockSearch" placeholder="Szukaj produktu..." oninput="renderStock()">
+    </div>
+  </div>
+  <div class="stock-list" id="stockList"></div>
 </div>
 
 <!-- PRODUKTY -->
 <div class="screen" id="screen-products">
   <div class="card">
-    <div class="card-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> SZUKAJ</div>
-    <div class="card-body"><input class="text-input" id="productSearch" placeholder="Nazwa lub kod..." oninput="renderProducts()" style="width:100%"></div>
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> SZUKAJ</div>
+    <div class="cb"><input class="prod-search" id="productSearch" placeholder="Nazwa lub kod..." oninput="renderProductsTab()" style="width:100%"></div>
   </div>
-  <div id="productList" style="display:flex;flex-direction:column;gap:6px;"></div>
+  <div id="productList" style="display:flex;flex-direction:column;gap:5px"></div>
 </div>
 
 <!-- USTAWIENIA -->
 <div class="screen" id="screen-settings">
   <div class="card">
-    <div class="card-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.63 19.79 19.79 0 01.01 2 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14z"/></svg> ADRES E-MAIL DO RAPORTÓW</div>
-    <div class="card-body">
-      <input class="text-input" id="emailInput" type="email" placeholder="np. magazyn@firma.pl" style="width:100%">
-      <button class="btn-action primary" onclick="saveEmail()">Zapisz adres</button>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> SYNCHRONIZACJA GOOGLE SHEETS</div>
-    <div class="card-body">
-      <div class="sync-row"><div class="sync-dot off" id="settingsSyncDot"></div><span id="settingsSyncText">Nie skonfigurowano</span></div>
-      <div class="setting-row">
-        <label>URL Apps Script (webhook)</label>
-        <input class="text-input" id="webhookInput" placeholder="https://script.google.com/macros/s/..." style="width:100%">
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> PRACOWNICY</div>
+    <div class="cb">
+      <div id="workerChips" class="wh-row"></div>
+      <div class="input-row">
+        <input class="ti" id="newWorkerInput" placeholder="Imię i nazwisko...">
+        <button class="icon-btn" onclick="addWorker()">+</button>
       </div>
-      <button class="btn-action primary" onclick="saveWebhook()">Zapisz i połącz</button>
-      <button class="btn-action outline" onclick="syncPending()">Wyślij oczekujące wpisy</button>
-      <hr class="divider">
-      <div class="setting-hint" id="pendingInfo"></div>
     </div>
   </div>
   <div class="card">
-    <div class="card-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> MAGAZYNY</div>
-    <div class="card-body"><div class="wh-row" id="whChipsSettings"></div></div>
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> MAGAZYNY</div>
+    <div class="cb"><div class="wh-row" id="whChipsSettings"></div></div>
   </div>
   <div class="card">
-    <div class="card-header"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg> DANE LOKALNE</div>
-    <div class="card-body">
-      <div class="setting-hint" id="localDataInfo"></div>
-      <button class="btn-action danger" onclick="clearAllData()">Wyczyść wszystkie dane lokalne</button>
+    <div class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg> DANE</div>
+    <div class="cb">
+      <div class="shint" id="localInfo"></div>
+      <button class="btn-a da" onclick="clearData()">Wyczyść wszystkie dane lokalne</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL: NOWY PRODUKT -->
-<div class="modal-backdrop" id="newProductModal">
+<!-- MODAL: POTWIERDŹ -->
+<div class="modal-bd" id="confirmModal">
   <div class="modal">
-    <h2>Nowy produkt — nadaj nazwę</h2>
-    <div><label>Kod kreskowy</label><div class="modal-code-display" id="modalCodeDisplay">—</div></div>
-    <div><label>Nazwa produktu</label><input class="text-input" id="newProductName" placeholder="np. Śruby M8 × 20mm" style="width:100%;" oninput="updateRegisterBtn()"></div>
-    <div class="qty-row"><label>Ilość</label><input class="qty-input" id="newProductQty" type="number" min="1" value="1"></div>
-    <button class="btn-primary" id="registerBtn" onclick="registerProduct()" style="opacity:0.5;" disabled>Zarejestruj operację</button>
-    <button class="btn-secondary" onclick="closeModal()">Anuluj</button>
+    <h2 id="cmTitle">Potwierdź operację</h2>
+    <div><label class="mlabel">Produkt</label><div class="mcode" id="cmProduct">—</div></div>
+    <div><label class="mlabel">Grupa</label><div class="mcode" id="cmGroup">—</div></div>
+    <div><label class="mlabel">Magazyn</label><div class="mcode" id="cmWh">—</div></div>
+    <div><label class="mlabel">Pracownik</label><div class="mcode" id="cmWorker">—</div></div>
+    <div class="qty-row">
+      <label>Ilość</label>
+      <input class="qi" id="cmQty" type="number" min="1" value="1">
+      <span id="cmUnit" style="font-size:13px;color:var(--ink2)">szt</span>
+    </div>
+    <button class="btn-p" id="cmConfirmBtn" onclick="confirmOp()">Potwierdź</button>
+    <button class="btn-s" onclick="closeConfirm()">Anuluj</button>
   </div>
 </div>
 
-<!-- MODAL: ZNANY PRODUKT -->
-<div class="modal-backdrop" id="knownProductModal">
-  <div class="modal">
-    <h2 id="knownProductTitle">—</h2>
-    <div><label>Kod</label><div class="modal-code-display" id="knownCodeDisplay">—</div></div>
-    <div><label>Magazyn</label><div class="modal-code-display" id="knownWhDisplay">—</div></div>
-    <div class="qty-row"><label>Ilość</label><input class="qty-input" id="knownProductQty" type="number" min="1" value="1"></div>
-    <button class="btn-primary" id="knownConfirmBtn" onclick="confirmKnown()">Potwierdź</button>
-    <button class="btn-secondary" onclick="closeKnownModal()">Anuluj</button>
-  </div>
-</div>
-
-<!-- MODAL: DODAJ MAGAZYN -->
-<div class="modal-backdrop" id="addWhModal">
+<!-- MODAL: MAGAZYN -->
+<div class="modal-bd" id="addWhModal">
   <div class="modal">
     <h2>Nowy magazyn</h2>
-    <div><label>Nazwa</label><input class="text-input" id="newWhName" placeholder="np. Magazyn B" style="width:100%;" onkeydown="if(event.key==='Enter')addWarehouse()"></div>
-    <button class="btn-primary" onclick="addWarehouse()">Dodaj</button>
-    <button class="btn-secondary" onclick="closeWhModal()">Anuluj</button>
+    <div><label class="mlabel">Nazwa</label>
+      <input class="ti" id="newWhName" placeholder="np. Magazyn B" style="width:100%" onkeydown="if(event.key==='Enter')addWarehouse()">
+    </div>
+    <button class="btn-p" onclick="addWarehouse()">Dodaj</button>
+    <button class="btn-s" onclick="closeWhModal()">Anuluj</button>
   </div>
 </div>
 
 <div id="toast"></div>
 
+<!-- CATALOG DATA -->
+<script id="catalogScript">
+const CATALOG = {"groups":[{"id":"g_2696","name":"Akcesoria Nuba Equi"},{"id":"g_33338","name":"Dodatki paszowe - mesze /otręby / wysłodki"},{"id":"g_62612","name":"Inne"},{"id":"g_67493","name":"Komponenty paszowe"},{"id":"g_8017","name":"Kosmetyki dla koni"},{"id":"g_96192","name":"Oleje dla koni zimnotłoczone"},{"id":"g_62737","name":"Pasze Nuba Musli - seria Care"},{"id":"g_65992","name":"Pasze Nuba Musli - seria podstawowa"},{"id":"g_40742","name":"Pasze musli - NuVena"},{"id":"g_45460","name":"Sieczki dla koni Nuba Chaff"},{"id":"g_84522","name":"Smakołyki Nuba Candy"},{"id":"g_59481","name":"Suplementy - Equina"},{"id":"g_32746","name":"Suplementy - NuVena Adds"},{"id":"g_31789","name":"Zioła - NuVena Herbs"},{"id":"g_23058","name":"Zioła - Peletki Ziołowe"}],"products":[{"id":"p_599084","name":"Brelok zawieszka mała Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_562799","name":"Czapka FlexFit Nuba Equi czarna - S/M","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_281276","name":"Czapka FlexFit Nuba Equi czerwona - S/M","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_271458","name":"Czapka Nuba Equi FlexFit - Czarna - XS/S","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_101347","name":"Czapka zimowa Nuba Equi czarna","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_722607","name":"Czapka zimowa z pomponem Nuba Equi czarna","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_114500","name":"Czapka zimowa z pomponem Nuba Equi czerwona","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_729955","name":"Czaprak skokowy granatowy Nuba Equi - EVO","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_799820","name":"Czaprak skokowy szary Nuba Equi - EVO","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_627633","name":"Czaprak ujeżdżeniowy biały Nuba Equi  - EVO","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_238933","name":"Kubek ceramiczny Nuba Equi czarny Great","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_158877","name":"Kubek termiczny Nuba Equi - czarny","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_10693","name":"Kubek termiczny Nuba Equi - czerwony","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_993750","name":"Łyżka do meszu - Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_689496","name":"Miarka do paszy 1,5l -  Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_891678","name":"Miska z pokrywką 10 l - Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_322503","name":"Miska z pokrywką 2 l  - Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_2857","name":"Miska z pokrywką 5 l - Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_951170","name":"Pokrywka do miski 10l - Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_271960","name":"Pokrywka do miski 5l - Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_84018","name":"Pokrywka do wiadra elastycznego 17l - Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_771401","name":"Pompka do opakowań 5l - 25 m","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_781772","name":"Ręcznik mikrofibra duży Nuba Equi Great","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_86199","name":"Ręcznik mikrofibra mały Nuba Equi Great","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_332187","name":"Ręcznik Nuba Equi mały","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_145921","name":"Smycz Nuba Equi Great","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_105869","name":"Tabliczka na boks Nuba Equi - biała","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_953083","name":"Tabliczka na boks Nuba Equi - czarna","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_76073","name":"Tabliczka na boks Nuba Equi - czerwona","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_251258","name":"Torba bawełniana czarna Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_670989","name":"Torba papierowa z logo NUBA EQUI","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_721582","name":"Uchwyt na kubek montowany do przeszkody - Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_832489","name":"Wiadro 33 l białe bez rączki, pokrywa biała","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_771563","name":"Wiadro elastyczne 17l - Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_588245","name":"Wiadro z rączką - Nuba Equi - 12l","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_523263","name":"Zapach do Auta - Apple&Cinnamon","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_238845","name":"Zapach do Auta - Nuba Equi","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_365629","name":"Silikon Zielony Allegro  - przyssawka do telefonu","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_797727","name":"Silikon Fuksja Allegro  - przyssawka do telefonu","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_990220","name":"Silikon Czerwony Allegro  - przyssawka do telefonu","group":"Akcesoria Nuba Equi","groupId":"g_2696","weight":1.0,"unit":"szt","barcode":""},{"id":"p_166793","name":"Nuba Cinna Wheat Bran - otręby pszenne z cynamonem - 20kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":20.0,"unit":"kg","barcode":""},{"id":"p_110038","name":"Nuba Classic Mash - mesz warzywny - 15kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":15.0,"unit":"kg","barcode":""},{"id":"p_139905","name":"Nuba Classic Mash 1,5kg DP - mesz warzywny","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":1.5,"unit":"kg","barcode":""},{"id":"p_393087","name":"Nuba Hawaii Mash - mesz kokosowy - 15kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":15.0,"unit":"kg","barcode":""},{"id":"p_328532","name":"Nuba Hawaii Mash 1,5kg DP  - mesz kokosowy","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":1.5,"unit":"kg","barcode":""},{"id":"p_684566","name":"Nuba Herbi Mash 1,5kg DP - mesz ziołowy","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":1.5,"unit":"kg","barcode":""},{"id":"p_717070","name":"Nuba Herbi Mash - mesz ziołowy - 15kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":15.0,"unit":"kg","barcode":""},{"id":"p_946339","name":"Nuba ProFibre Mix - niskoskrobiowy dodatek wysokowłóknisty - 20kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":20.0,"unit":"kg","barcode":""},{"id":"p_350078","name":"Nuba ProMass Mash - mesz niskoskrobiowy - 15kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":15.0,"unit":"kg","barcode":""},{"id":"p_79649","name":"Nuba ProMass Mash 1,5kg DP  - mesz niskoskrobiowy","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":1.5,"unit":"kg","barcode":""},{"id":"p_391549","name":"Nuba ProMass Mix - dodatek na przytycie - 20kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":20.0,"unit":"kg","barcode":""},{"id":"p_395671","name":"Nuba Rice - otręby ryżowe bilansowane - 20kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":20.0,"unit":"kg","barcode":""},{"id":"p_691132","name":"Nuba Rice&Apple - otręby ryżowe z jabłkiem - 20kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":20.0,"unit":"kg","barcode":""},{"id":"p_729096","name":"Nuba Rice&Carrot - otręby ryżowe z marchewką - 15kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":15.0,"unit":"kg","barcode":""},{"id":"p_111436","name":"Nuba Rice&Lucern - otręby ryżowe z lucerną - 15kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":15.0,"unit":"kg","barcode":""},{"id":"p_485738","name":"Nuba Rice&Mint - otręby ryżowe z miętą - 15kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":15.0,"unit":"kg","barcode":""},{"id":"p_785753","name":"Nuba Speedy Beet Mix - wysłodki buraczane z dodatkami szybkie - 20kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":20.0,"unit":"kg","barcode":""},{"id":"p_135290","name":"Nuba Sunny Mash - mesz słonecznikowy niskoskrobiowy - 15kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":15.0,"unit":"kg","barcode":""},{"id":"p_466188","name":"Nuba Sunny Mash 1,5kg DP  - mesz słonecznikowy","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":1.5,"unit":"kg","barcode":""},{"id":"p_141246","name":"NuVena Beet - wysłodki buraczane niemelasowane - 25kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":25.0,"unit":"kg","barcode":""},{"id":"p_816585","name":"Próbka paszy Nuba Equi","group":"Inne","groupId":"g_62612","weight":1.0,"unit":"szt","barcode":""},{"id":"p_262732","name":"Transport","group":"Inne","groupId":"g_62612","weight":1.0,"unit":"szt","barcode":""},{"id":"p_976805","name":"Horse&Business Magazine - wydanie nr 3 (29)/2024","group":"Inne","groupId":"g_62612","weight":1.0,"unit":"szt","barcode":""},{"id":"p_535750","name":"Horse&Business Magazine - wydanie nr 1 (31)/2025","group":"Inne","groupId":"g_62612","weight":1.0,"unit":"szt","barcode":""},{"id":"p_532982","name":"Horse & Business Magazine  -wydanie nr1 (31)/2025","group":"Inne","groupId":"g_62612","weight":1.0,"unit":"szt","barcode":""},{"id":"p_623331","name":"Horse&Business Magazine - wydanie nr 4 (30)/2024","group":"Inne","groupId":"g_62612","weight":1.0,"unit":"szt","barcode":""},{"id":"p_37218","name":"usługa szkoleniowa w zakresie żywienia koni","group":"Inne","groupId":"g_62612","weight":1.0,"unit":"szt","barcode":""},{"id":"p_194871","name":"Nuba Black Seed Meal - makuch z czarnuszki - 1,5kg DP","group":"Komponenty paszowe","groupId":"g_67493","weight":1.5,"unit":"kg","barcode":""},{"id":"p_886830","name":"Nuba Black Seed Meal - makuch z czarnuszki - 2,8 kg DP","group":"Komponenty paszowe","groupId":"g_67493","weight":2.8,"unit":"kg","barcode":""},{"id":"p_167007","name":"Nuba Whole Flaxseed - siemie lniane - 2kg DP","group":"Komponenty paszowe","groupId":"g_67493","weight":2.0,"unit":"kg","barcode":""},{"id":"p_585430","name":"Nuba Whole Flaxseed - siemie lniane - 3,5kg DP","group":"Komponenty paszowe","groupId":"g_67493","weight":3.5,"unit":"kg","barcode":""},{"id":"p_794553","name":"NuVena BagLin - makuch lniany - 20kg","group":"Komponenty paszowe","groupId":"g_67493","weight":20.0,"unit":"kg","barcode":""},{"id":"p_348191","name":"NuVena Sunburnt Barley - jęczmień mikronizowany - 20kg","group":"Komponenty paszowe","groupId":"g_67493","weight":20.0,"unit":"kg","barcode":""},{"id":"p_93342","name":"NuVena Sunburnt Corn - kukurydza mikronizowana - 20kg","group":"Komponenty paszowe","groupId":"g_67493","weight":20.0,"unit":"kg","barcode":""},{"id":"p_897540","name":"NuVena Sunburnt Oat - owies mikronizowany - 20kg","group":"Komponenty paszowe","groupId":"g_67493","weight":20.0,"unit":"kg","barcode":""},{"id":"p_836508","name":"NuVena Sunburnt Soya - soja mikronizowana - 20 kg","group":"Komponenty paszowe","groupId":"g_67493","weight":20.0,"unit":"kg","barcode":""},{"id":"p_878806","name":"NuVena Whole Flaxseed - siemie lniane - 20kg DP","group":"Komponenty paszowe","groupId":"g_67493","weight":20.0,"unit":"kg","barcode":""},{"id":"p_541304","name":"NuVena Spa - Coco Hoof Balm - smar do kopyt dla koni - 500g","group":"Kosmetyki dla koni","groupId":"g_8017","weight":0.5,"unit":"kg","barcode":""},{"id":"p_500428","name":"NuVena Spa - Coco Hoof Balm - smar do kopyt dla koni - 50g (próbka)","group":"Kosmetyki dla koni","groupId":"g_8017","weight":0.5,"unit":"kg","barcode":""},{"id":"p_88256","name":"NuVena Spa - Cool Down - żel chłodzący dla koni - 500g","group":"Kosmetyki dla koni","groupId":"g_8017","weight":0.5,"unit":"kg","barcode":""},{"id":"p_619831","name":"NuVena Spa - Cool Down - żel chłodzący dla koni - 50g (próbka)","group":"Kosmetyki dla koni","groupId":"g_8017","weight":0.5,"unit":"kg","barcode":""},{"id":"p_776486","name":"NuVena Spa - Groom's Clay - glinka dla koni - 10kg","group":"Kosmetyki dla koni","groupId":"g_8017","weight":10.0,"unit":"kg","barcode":""},{"id":"p_342333","name":"NuVena Spa - Groom's Clay - glinka dla koni - 2kg","group":"Kosmetyki dla koni","groupId":"g_8017","weight":2.0,"unit":"kg","barcode":""},{"id":"p_474838","name":"NuVena Spa - Hawaii Shampoo - szampon dla koni - 400ml","group":"Kosmetyki dla koni","groupId":"g_8017","weight":0.4,"unit":"l","barcode":""},{"id":"p_819362","name":"NuVena Spa - Hawaii Shampoo - szampon dla koni - 50ml (próbka)","group":"Kosmetyki dla koni","groupId":"g_8017","weight":0.05,"unit":"l","barcode":""},{"id":"p_277009","name":"NuVena Spa - Warm Up - żel rozgrzewający dla koni - 500g","group":"Kosmetyki dla koni","groupId":"g_8017","weight":0.5,"unit":"kg","barcode":""},{"id":"p_158207","name":"NuVena Spa - Warm Up - żel rozgrzewający dla koni - 50g (próbka)","group":"Kosmetyki dla koni","groupId":"g_8017","weight":0.5,"unit":"kg","barcode":""},{"id":"p_58394","name":"Olej Lniano-Kokosowy 1000ml - Nuba Equi Zimnotłoczone Oleje Dla Koni","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":1.0,"unit":"l","barcode":""},{"id":"p_509500","name":"Olej Lniano-Kokosowy 2000ml - Nuba Equi Zimnotłoczone Oleje Dla Koni","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":2.0,"unit":"l","barcode":""},{"id":"p_851024","name":"Olej Lniano-Kokosowy 5000ml - Nuba Equi Zimnotłoczone Oleje Dla Koni","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":5.0,"unit":"l","barcode":""},{"id":"p_45553","name":"Olej lniany - marka Over Horse - opak 1 l","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":1.0,"unit":"l","barcode":""},{"id":"p_965987","name":"Olej lniany - marka Over Horse - opak 5 l","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":5.0,"unit":"l","barcode":""},{"id":"p_440997","name":"Olej Lniany 1000ml - Nuba Equi Zimnotłoczone Oleje Dla Koni","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":1.0,"unit":"l","barcode":""},{"id":"p_276884","name":"Olej Lniany 2000ml - Nuba Equi Zimnotłoczone Oleje Dla Koni","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":2.0,"unit":"l","barcode":""},{"id":"p_697545","name":"Olej Lniany 5000ml - Nuba Equi Zimnotłoczone Oleje Dla Koni","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":5.0,"unit":"l","barcode":""},{"id":"p_860926","name":"Olej z czarnuszki 1000ml - Nuba Equi Zimnotłoczone Oleje Dla Koni","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":1.0,"unit":"l","barcode":""},{"id":"p_760328","name":"Olej z czarnuszki 2000ml - Nuba Equi Zimnotłoczone Oleje Dla Koni","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":2.0,"unit":"l","barcode":""},{"id":"p_707624","name":"Olej z czarnuszki 500ml - Nuba Equi Zimnotłoczone Oleje Dla Koni","group":"Oleje dla koni zimnotłoczone","groupId":"g_96192","weight":0.5,"unit":"l","barcode":""},{"id":"p_631495","name":"NuVena AminoRich - pasza musli dla koni - 20kg","group":"Pasze musli - NuVena","groupId":"g_40742","weight":20.0,"unit":"kg","barcode":""},{"id":"p_960210","name":"NuVena Energy - pasza musli dla koni - 20kg","group":"Pasze musli - NuVena","groupId":"g_40742","weight":20.0,"unit":"kg","barcode":""},{"id":"p_486837","name":"NuVena Green Fields Pellets - trawokulki - 20kg","group":"Dodatki paszowe - mesze /otręby / wysłodki","groupId":"g_33338","weight":20.0,"unit":"kg","barcode":""},{"id":"p_475520","name":"NuVena Light - pasza musli dla koni - 20kg","group":"Pasze musli - NuVena","groupId":"g_40742","weight":20.0,"unit":"kg","barcode":""},{"id":"p_458275","name":"NuVena Medium - pasza musli dla koni - 20kg","group":"Pasze musli - NuVena","groupId":"g_40742","weight":20.0,"unit":"kg","barcode":""},{"id":"p_381150","name":"Nuba 2Hearts Musli 2G - dla klaczy w pierszych miesiącach ciąży - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_398212","name":"Nuba 2Hearts Musli Balancer 2G - dla klaczy źrebnych - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_884530","name":"Nuba Baby Mix 2G - pasza dla źrebiąt - 15kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":15.0,"unit":"kg","barcode":""},{"id":"p_140","name":"Nuba Grow1 Musli 2G - pasza dla roczniaków - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_184063","name":"Nuba Grow1 Musli Balancer 2G - pasza dla roczniaków - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_690822","name":"Nuba Grow2 Musli 2G - pasza dla koni dwuletnich - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_125335","name":"Nuba Grow2 Musli Balancer 2G - pasza dla koni dwuletnich - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_756349","name":"Nuba Grow3 Musli 2G - pasza dla koni trzyletnich - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_568292","name":"Nuba Grow3 Musli Balancer 2G - pasza dla koni trzyletnich - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_993152","name":"Nuba Mammy Musli 2G - pasza dla klaczy źrebnych i laktujących - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_173064","name":"Nuba Mammy Musli Balancer 2G - dla klaczy źrebnych i karmiących - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_732034","name":"Nuba Young Musli 2G - pasza dla odsadków - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_458810","name":"Nuba Young Musli Balancer 2G - pasza dla odsadków - 20kg","group":"Pasze Nuba Musli - seria Care","groupId":"g_62737","weight":20.0,"unit":"kg","barcode":""},{"id":"p_672737","name":"Nuba 7Herbs Musli 2G - 20 kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_269907","name":"Nuba 7Herbs Musli Balancer 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_688068","name":"Nuba Allergic Musli 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_864672","name":"Nuba Allergic Musli Balancer 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_364555","name":"Nuba Builder Musli 2G - 20 kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_353849","name":"Nuba Builder Musli Balancer 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_200502","name":"Nuba Cool Musli 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_737846","name":"Nuba Daily Musli 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_158361","name":"Nuba Daily Musli Balancer 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_970187","name":"Nuba Digest Musli 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_868753","name":"Nuba Digest Musli Balancer 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_347499","name":"Nuba Digest Musli Balancer Sensitive 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_602445","name":"Nuba Digest Musli Sensitive - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_240552","name":"Nuba EasyWay Musli 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_644112","name":"Nuba EasyWay Musli Balancer 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_401171","name":"Nuba LongLife Musli 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_129476","name":"Nuba LongLife Musli Balancer 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_260206","name":"Nuba Slimmer Musli 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_476406","name":"Nuba Sport Musli 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_610135","name":"Nuba Sport Musli Balancer 2G - 20kg","group":"Pasze Nuba Musli - seria podstawowa","groupId":"g_65992","weight":20.0,"unit":"kg","barcode":""},{"id":"p_141850","name":"Nuba Belly Favour Chaff - 15kg","group":"Sieczki dla koni Nuba Chaff","groupId":"g_45460","weight":15.0,"unit":"kg","barcode":""},{"id":"p_570474","name":"Nuba Hoof & Shine Chaff - 15 kg","group":"Sieczki dla koni Nuba Chaff","groupId":"g_45460","weight":15.0,"unit":"kg","barcode":""},{"id":"p_98988","name":"Nuba Lucern Coco Oil Chaff - 15kg","group":"Sieczki dla koni Nuba Chaff","groupId":"g_45460","weight":15.0,"unit":"kg","barcode":""},{"id":"p_409697","name":"Nuba Pure Lucern Chaff - 15kg","group":"Sieczki dla koni Nuba Chaff","groupId":"g_45460","weight":15.0,"unit":"kg","barcode":""},{"id":"p_177612","name":"Nuba Candy Apple&Cinnamon 1 kg DP - Smakołyki jabłko z cynamonem","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":1.0,"unit":"kg","barcode":""},{"id":"p_786592","name":"Nuba Candy Apple&Cinnamon 2 kg DP - Smakołyki jabłko z cynamonem","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_230822","name":"Nuba Candy Apple&Cinnamon 2 kg RP - Smakołyki jabłko z cynamonem","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_712113","name":"Nuba Candy Apple&Cinnamon 20 kg - Smakołyki jabłko z cynamonem","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":20.0,"unit":"kg","barcode":""},{"id":"p_863332","name":"Nuba Candy Apple&Cinnamon 4 kg DP - Smakołyki jabłko z cynamonem","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":4.0,"unit":"kg","barcode":""},{"id":"p_753394","name":"Nuba Candy Apple&Cinnamon 4 kg RP - Smakołyki jabłko z cynamonem","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":4.0,"unit":"kg","barcode":""},{"id":"p_96964","name":"Nuba Candy Apple&Cinnamon 8 kg RP - Smakołyki jabłko z cynamonem","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":8.0,"unit":"kg","barcode":""},{"id":"p_399661","name":"Nuba Candy BeetRoot 1 kg DP - Smakołyki buraczane","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":1.0,"unit":"kg","barcode":""},{"id":"p_588487","name":"Nuba Candy BeetRoot 2 kg DP - Smakołyki buraczane","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_74216","name":"Nuba Candy BeetRoot 2 kg RP - Smakołyki buraczane","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_947813","name":"Nuba Candy BeetRoot 20 kg - Smakołyki buraczane","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":20.0,"unit":"kg","barcode":""},{"id":"p_337504","name":"Nuba Candy BeetRoot 4 kg DP - Smakołyki buraczane","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":4.0,"unit":"kg","barcode":""},{"id":"p_590637","name":"Nuba Candy BeetRoot 4kg RP - Smakołyki buraczane","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":4.0,"unit":"kg","barcode":""},{"id":"p_258691","name":"Nuba Candy BeetRoot 8 kg RP - Smakołyki buraczane","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":8.0,"unit":"kg","barcode":""},{"id":"p_997694","name":"Nuba Candy Coconut 0,7 kg DP - Smakołyki kokosowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":0.7,"unit":"kg","barcode":""},{"id":"p_7675","name":"Nuba Candy Coconut 1,5 kg DP - Smakołyki kokosowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":1.5,"unit":"kg","barcode":""},{"id":"p_213744","name":"Nuba Candy Coconut 1,5 kg RP - Smakołyki kokosowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":1.5,"unit":"kg","barcode":""},{"id":"p_491247","name":"Nuba Candy Coconut 15 kg RP - Smakołyki kokosowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":15.0,"unit":"kg","barcode":""},{"id":"p_448819","name":"Nuba Candy Coconut 3 kg DP - Smakołyki kokosowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":3.0,"unit":"kg","barcode":""},{"id":"p_169676","name":"Nuba Candy Coconut 3 kg RP - Smakołyki kokosowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":3.0,"unit":"kg","barcode":""},{"id":"p_357523","name":"Nuba Candy Coconut 5 kg RP - Smakołyki kokosowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":5.0,"unit":"kg","barcode":""},{"id":"p_668133","name":"Nuba Candy GingerBread 1 kg DP - Smakołyki pierniczkowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":1.0,"unit":"kg","barcode":""},{"id":"p_829016","name":"Nuba Candy GingerBread 2 kg RP - Smakołyki pierniczkowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_250853","name":"Nuba Candy GingerBread 8 kg RP- Smakołyki pierniczkowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":8.0,"unit":"kg","barcode":""},{"id":"p_565560","name":"Nuba Candy Mix - 6 opakowań z każdego smaku - 1 kg lub 0,7 kg DP","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":0.7,"unit":"kg","barcode":""},{"id":"p_768532","name":"Nuba Candy PepperMint 1 kg DP - Smakołyki miętowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":1.0,"unit":"kg","barcode":""},{"id":"p_403458","name":"Nuba Candy PepperMint 2 kg DP - Smakołyki miętowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_423470","name":"Nuba Candy PepperMint 2 kg RP - Smakołyki miętowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_692928","name":"Nuba Candy PepperMint 20 kg - Smakołyki miętowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":20.0,"unit":"kg","barcode":""},{"id":"p_206621","name":"Nuba Candy PepperMint 4 kg DP - Smakołyki miętowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":4.0,"unit":"kg","barcode":""},{"id":"p_432424","name":"Nuba Candy PepperMint 4kg RP - Smakołyki miętowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":4.0,"unit":"kg","barcode":""},{"id":"p_406051","name":"Nuba Candy PepperMint 8 kg RP - Smakołyki miętowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":8.0,"unit":"kg","barcode":""},{"id":"p_696127","name":"Nuba Candy SeaBerry Gastro 1 kg DP - Smakołyki dla koni wrzodowych","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":1.0,"unit":"kg","barcode":""},{"id":"p_87314","name":"Nuba Candy SeaBerry Gastro 2 kg DP - Smakołyki dla koni wrzodowych","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_10697","name":"Nuba Candy SeaBerry Gastro 2 kg RP - Smakołyki dla koni wrzodowych","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_720004","name":"Nuba Candy SeaBerry Gastro 20 kg - Smakołyki dla koni wrzodowych","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":20.0,"unit":"kg","barcode":""},{"id":"p_273683","name":"Nuba Candy SeaBerry Gastro 4 kg DP - Smakołyki dla koni wrzodowych","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":4.0,"unit":"kg","barcode":""},{"id":"p_660825","name":"Nuba Candy SeaBerry Gastro 4 kg RP - Smakołyki dla koni wrzodowych","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":4.0,"unit":"kg","barcode":""},{"id":"p_110457","name":"Nuba Candy SeaBerry Gastro 8 kg RP - Smakołyki dla koni wrzodowych","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":8.0,"unit":"kg","barcode":""},{"id":"p_491887","name":"Nuba Candy Sweet Carrot 1 kg DP - Smakołyki marchewkowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":1.0,"unit":"kg","barcode":""},{"id":"p_471445","name":"Nuba Candy Sweet Carrot 2 kg DP - Smakołyki marchewkowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_395833","name":"Nuba Candy Sweet Carrot 2 kg RP - Smakołyki marchewkowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":2.0,"unit":"kg","barcode":""},{"id":"p_259727","name":"Nuba Candy Sweet Carrot 20 kg - Smakołyki marchewkowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":20.0,"unit":"kg","barcode":""},{"id":"p_1213","name":"Nuba Candy Sweet Carrot 4 kg DP - Smakołyki marchewkowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":4.0,"unit":"kg","barcode":""},{"id":"p_87463","name":"Nuba Candy Sweet Carrot 4 kg RP - Smakołyki marchewkowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":4.0,"unit":"kg","barcode":""},{"id":"p_871518","name":"Nuba Candy Sweet Carrot 8 kg RP - Smakołyki marchewkowe","group":"Smakołyki Nuba Candy","groupId":"g_84522","weight":8.0,"unit":"kg","barcode":""},{"id":"p_38147","name":"Equina - Artisol 900g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_72827","name":"Equina - Artisol Ultra 900g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_331487","name":"Equina - Energy Xpro 200ml","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_631071","name":"Equina - Haemoxil 1000ml","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_5856","name":"Equina - Haemoxil 250ml","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_326869","name":"Equina - Hydrolyt 1800g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_251053","name":"Equina - ImmunoPro 600g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_522208","name":"Equina - Keragard 1000ml","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_624727","name":"Equina - Meganutril 3000g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_918772","name":"Equina - Meganutril 7500g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_464889","name":"Equina - Meganutril Junior 1000g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_971106","name":"Equina - Myofortil 1000ml","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_999801","name":"Equina - Myofortil ultra 1800g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_807285","name":"Equina - Myofortil Ultra 600g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_615831","name":"Equina - Repax 600g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_867855","name":"Equina - Repax Xpro 200ml","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_730733","name":"Equina - Secrolin 800g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_578263","name":"Equina - Trifertil 3000g","group":"Suplementy - Equina","groupId":"g_59481","weight":1.0,"unit":"szt","barcode":""},{"id":"p_516213","name":"AGR - Aloe Gastro Remedy - 1000 ml","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.0,"unit":"l","barcode":""},{"id":"p_877404","name":"AGR - Aloe Gastro Remedy - 500ml","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.5,"unit":"l","barcode":""},{"id":"p_968175","name":"AGR - Aloe Gastro Remedy - 50ml (próbka)","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.05,"unit":"l","barcode":""},{"id":"p_128662","name":"Biogen K 1000g - probiotyk dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.0,"unit":"kg","barcode":""},{"id":"p_899739","name":"NuVena Adds  - Sea Algae 1500g - algi morskie Ascophyllum nodosum dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.5,"unit":"kg","barcode":""},{"id":"p_53639","name":"NuVena Adds - Bentonite 1300g - bentonit dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.3,"unit":"kg","barcode":""},{"id":"p_907716","name":"NuVena Adds - Bentonite 300g - bentonit dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.3,"unit":"kg","barcode":""},{"id":"p_646580","name":"NuVena Adds - Bentonite 800g - bentonit dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.8,"unit":"kg","barcode":""},{"id":"p_895540","name":"NuVena Adds - Biotin 1000g - biotyna dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.0,"unit":"kg","barcode":""},{"id":"p_684523","name":"NuVena Adds - Biotin 330g - biotyna dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.33,"unit":"kg","barcode":""},{"id":"p_196011","name":"NuVena Adds - Biotin 6000 g - biotyna dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":6.0,"unit":"kg","barcode":""},{"id":"p_690938","name":"NuVena Adds - Copper Chelate 200g - chelat miedzi dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.2,"unit":"kg","barcode":""},{"id":"p_419896","name":"NuVena Adds - Copper Chelate 550g - chelat miedzi dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.55,"unit":"kg","barcode":""},{"id":"p_243330","name":"NuVena Adds - Equi Biotic 300g  - probiotyk dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.3,"unit":"kg","barcode":""},{"id":"p_658709","name":"NuVena Adds - Equi Biotic 900g - probiotyk dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.9,"unit":"kg","barcode":""},{"id":"p_243058","name":"NuVena Adds - Lecithin 1250g - lecytyna dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.25,"unit":"kg","barcode":""},{"id":"p_198949","name":"NuVena Adds - Lecithin 500g - lecytyna dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.5,"unit":"kg","barcode":""},{"id":"p_208764","name":"NuVena Adds - Lysine 1300g - lizyna dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.3,"unit":"kg","barcode":""},{"id":"p_16978","name":"NuVena Adds - Lysine 600g - lizyna dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.6,"unit":"kg","barcode":""},{"id":"p_711430","name":"NuVena Adds - Magnesium 1200g - magnez dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.2,"unit":"kg","barcode":""},{"id":"p_259758","name":"NuVena Adds - Magnesium 2000g - magnez dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":2.0,"unit":"kg","barcode":""},{"id":"p_730999","name":"NuVena Adds - Magnesium 500g - magnez dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.5,"unit":"kg","barcode":""},{"id":"p_818117","name":"NuVena Adds - Magnesium Low Fer 1200g - magnez dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.2,"unit":"kg","barcode":""},{"id":"p_195054","name":"NuVena Adds - Magnesium Low Fer 2000g - magnez dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":2.0,"unit":"kg","barcode":""},{"id":"p_298485","name":"NuVena Adds - Magnesium Low Fer 6000g - magnez dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":6.0,"unit":"kg","barcode":""},{"id":"p_265254","name":"NuVena Adds - MSM 1400g - siarka organiczna dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.4,"unit":"kg","barcode":""},{"id":"p_287804","name":"NuVena Adds - MSM 350g - siarka organiczna dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.35,"unit":"kg","barcode":""},{"id":"p_54947","name":"NuVena Adds - MSM 800g - siarka organiczna dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.8,"unit":"kg","barcode":""},{"id":"p_459675","name":"NuVena Adds - Sea Algae 350g - algi morskie Ascophyllum nodosum dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.35,"unit":"kg","barcode":""},{"id":"p_540954","name":"NuVena Adds - Sea Algae 900g - algi morskie Ascophyllum nodosum dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.9,"unit":"kg","barcode":""},{"id":"p_216979","name":"NuVena Adds - Selen + E Chelate 1100g - chelat selenu z witaminą E dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.1,"unit":"kg","barcode":""},{"id":"p_640426","name":"NuVena Adds - Selen + E Chelate 2000g - chelat selenu z witaminą E dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":2.0,"unit":"kg","barcode":""},{"id":"p_17260","name":"NuVena Adds - Selen + E Chelate 250g - chelat selenu z witaminą E dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.25,"unit":"kg","barcode":""},{"id":"p_707224","name":"NuVena Adds - Selen + E Chelate 350 g - chelat selenu z witaminą E dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.35,"unit":"kg","barcode":""},{"id":"p_59808","name":"NuVena Adds - Selen + E Chelate 4500g - chelat selenu z witaminą E dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":4.5,"unit":"kg","barcode":""},{"id":"p_186547","name":"NuVena Adds - Selen + E Chelate 5000g - chelat selenu z witaminą E dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":5.0,"unit":"kg","barcode":""},{"id":"p_772090","name":"NuVena Adds - Selen + E Chelate 600g - chelat selenu z witaminą E dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.6,"unit":"kg","barcode":""},{"id":"p_761499","name":"NuVena Adds - Selen + E Chelate 900g - chelat selenu z witaminą E dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.9,"unit":"kg","barcode":""},{"id":"p_801158","name":"NuVena Adds - Spiruline 900g - spirulina dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.9,"unit":"kg","barcode":""},{"id":"p_121344","name":"NuVena Adds - Vitamin C 1000g - witamina C dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.0,"unit":"kg","barcode":""},{"id":"p_614048","name":"NuVena Adds - Vitamin C 2000g - witamina C dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":2.0,"unit":"kg","barcode":""},{"id":"p_905512","name":"NuVena Adds - Vitamin C 330g - witamina C dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.33,"unit":"kg","barcode":""},{"id":"p_912634","name":"NuVena Adds - Vitamin E 330g - witamina E dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.33,"unit":"kg","barcode":""},{"id":"p_505066","name":"NuVena Adds - Vitamin E 900g - witamina E dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.9,"unit":"kg","barcode":""},{"id":"p_722334","name":"NuVena Adds - Yeast 1300g - drożdże Saccharomyces cerevisiae dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":1.3,"unit":"kg","barcode":""},{"id":"p_280588","name":"NuVena Adds - Yeast 2000g - drożdże Saccharomyces cerevisiae dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":2.0,"unit":"kg","barcode":""},{"id":"p_238482","name":"NuVena Adds - Yeast 4000g - drożdże Saccharomyces cerevisiae dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":4.0,"unit":"kg","barcode":""},{"id":"p_16144","name":"NuVena Adds - Yeast 700g - drożdże Saccharomyces cerevisiae dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.7,"unit":"kg","barcode":""},{"id":"p_459883","name":"NuVena Adds - Zinc Chelate 2000g - chelat cynku dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":2.0,"unit":"kg","barcode":""},{"id":"p_256861","name":"NuVena Adds - Zinc Chelate 200g - chelat cynku dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.2,"unit":"kg","barcode":""},{"id":"p_37466","name":"NuVena Adds - Zinc Chelate 550g - chelat cynku dla koni","group":"Suplementy - NuVena Adds","groupId":"g_32746","weight":0.55,"unit":"kg","barcode":""},{"id":"p_393941","name":"Jeżówka Purpurowa (Echinacea) 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_429693","name":"NuVena Herbs - Malina liść 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_940056","name":"NuVena Herbs - Babka lancetowata 1 kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_956414","name":"NuVena Herbs - Brzoza liść 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_445297","name":"NuVena Herbs - Chmiel szyszka 0,5kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":0.5,"unit":"kg","barcode":""},{"id":"p_881598","name":"NuVena Herbs - Czarna Porzeczka liść 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_27764","name":"NuVena Herbs - 8x Dzika róża owoc 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_977544","name":"NuVena Herbs - Dziurawiec zwyczajny 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_91385","name":"NuVena Herbs - Glistnik jaskółcze ziele 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_363196","name":"NuVena Herbs - Jeżówka Purpurowa (Echinacea) 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_80784","name":"NuVena Herbs - Kozieradka pospolita nasiona 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_555356","name":"NuVena Herbs - Kozłek lekarski korzeń 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_484446","name":"NuVena Herbs - Krwawnik 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_551852","name":"NuVena Herbs - Kwiat Głogu 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_672690","name":"NuVena Herbs - Lawenda kwiat 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_970519","name":"NuVena Herbs - Lipa liść 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_332519","name":"NuVena Herbs - Łopian korzeń  1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_958061","name":"NuVena Herbs - Melisa lekarska 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_299689","name":"NuVena Herbs - Mięta pieprzowa 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_72894","name":"NuVena Herbs - Mniszek lekarski 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_159842","name":"NuVena Herbs - Ogórecznik lekarski 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_560020","name":"NuVena Herbs - Ostropest plamisty 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_320362","name":"NuVena Herbs - Owoc Głogu 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_329370","name":"NuVena Herbs - Podbiał pospolity 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_442722","name":"NuVena Herbs - Pokrzywa zwyczajna 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_590571","name":"NuVena Herbs - Rokitnik owoc 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_673207","name":"NuVena Herbs - Rumianek kwiat 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_520564","name":"NuVena Herbs - Serdecznik pospolity 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_384193","name":"NuVena Herbs - Szałwia lekarska 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_507602","name":"NuVena Herbs - Tymianek 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_608139","name":"NuVena Herbs - Wiązówka błotna 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_627324","name":"NuVena Herbs - Wrotycz pospolity 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_481367","name":"NuVena Herbs - Żywokost lekarski korzeń 1kg DP","group":"Zioła - NuVena Herbs","groupId":"g_31789","weight":1.0,"unit":"kg","barcode":""},{"id":"p_24741","name":"Nuba Equi - Peletki Ziołowe - Echinacea (Jeżówka Purupurowa) 1300g","group":"Zioła - Peletki Ziołowe","groupId":"g_23058","weight":1.3,"unit":"kg","barcode":""},{"id":"p_691647","name":"Nuba Equi - Peletki Ziołowe - Oddychanie 1300g","group":"Zioła - Peletki Ziołowe","groupId":"g_23058","weight":1.3,"unit":"kg","barcode":""},{"id":"p_169099","name":"Nuba Equi - Peletki Ziołowe - Odporność 1300g","group":"Zioła - Peletki Ziołowe","groupId":"g_23058","weight":1.3,"unit":"kg","barcode":""},{"id":"p_969387","name":"Nuba Equi - Peletki Ziołowe - Skóra i Sierść 1300g","group":"Zioła - Peletki Ziołowe","groupId":"g_23058","weight":1.3,"unit":"kg","barcode":""},{"id":"p_872452","name":"Nuba Equi - Peletki Ziołowe - Stabilizacja Nerwów 1300g","group":"Zioła - Peletki Ziołowe","groupId":"g_23058","weight":1.3,"unit":"kg","barcode":""},{"id":"p_198023","name":"Nuba Equi - Peletki Ziołowe - Stawy i Ścięgna 1300g","group":"Zioła - Peletki Ziołowe","groupId":"g_23058","weight":1.3,"unit":"kg","barcode":""},{"id":"p_475290","name":"Nuba Equi - Peletki Ziołowe - Układ Krwionośny 1300g","group":"Zioła - Peletki Ziołowe","groupId":"g_23058","weight":1.3,"unit":"kg","barcode":""},{"id":"p_358628","name":"Nuba Equi - Peletki Ziołowe - Układ Trawienny 1300g","group":"Zioła - Peletki Ziołowe","groupId":"g_23058","weight":1.3,"unit":"kg","barcode":""},{"id":"p_841031","name":"Mieszanka ziołowa stawy i ścięgna","group":"Zioła - Peletki Ziołowe","groupId":"g_23058","weight":1.0,"unit":"szt","barcode":""},{"id":"p_35933","name":"Mieszanka ziołowa oddech","group":"Zioła - Peletki Ziołowe","groupId":"g_23058","weight":2.0,"unit":"szt","barcode":""}]};
+</script>
+
 <script>
-// ════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════
+// ═══ STATE ═══
 let db = loadDB();
 let currentOp = 'wejscie';
 let currentWh = db.warehouses[0] || null;
-let filterWh = 'all', filterOp = 'all';
-let pendingCode = null;
-let cameraActive = false;
-let scanLoop = null;
-let detector = null;
+let currentWorker = null;
+let filterWh = 'all', filterOp = 'all', stockWh = 'all';
+let selectedGroup = null;
+let pendingProduct = null;
+let cameraActive = false, scanLoop = null, detector = null;
 
 function loadDB() {
-  try { const r = localStorage.getItem('mscan_v3'); if (r) return JSON.parse(r); } catch(e) {}
-  return { warehouses: ['Magazyn A'], products: {}, history: [], pending: [], email: '', webhookUrl: '' };
+  try { const r = localStorage.getItem('mscan_v4'); if (r) return JSON.parse(r); } catch(e) {}
+  return { warehouses: ['Magazyn A'], workers: ['Pracownik 1'], products: {}, history: [] };
 }
-function saveDB() { localStorage.setItem('mscan_v3', JSON.stringify(db)); updateSyncUI(); updateLocalDataInfo(); }
+function saveDB() { localStorage.setItem('mscan_v4', JSON.stringify(db)); updateLocalInfo(); }
 
-// ════════════════════════════════════════
-// SCREENS
-// ════════════════════════════════════════
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  document.getElementById('tab-' + name).classList.add('active');
-  if (name !== 'scan') stopCamera();
-  if (name === 'history') { renderWhFilterChips(); renderHistory(); }
-  if (name === 'products') renderProducts();
-  if (name === 'settings') renderSettings();
-}
-
-// ════════════════════════════════════════
-// WAREHOUSES
-// ════════════════════════════════════════
-function renderWhChips() {
-  ['whChips','whChipsSettings'].forEach(id => {
-    const c = document.getElementById(id); if (!c) return;
-    c.innerHTML = '';
-    db.warehouses.forEach(wh => {
-      const b = document.createElement('button');
-      b.className = 'wh-chip' + (wh === currentWh ? ' selected' : '');
-      b.textContent = wh;
-      b.onclick = () => { currentWh = wh; renderWhChips(); updateHeaderSub(); };
-      c.appendChild(b);
-    });
-    const add = document.createElement('button');
-    add.className = 'wh-chip add-wh'; add.textContent = '+';
-    add.onclick = () => { document.getElementById('newWhName').value = ''; document.getElementById('addWhModal').classList.add('open'); };
-    c.appendChild(add);
+// ═══ LOGIN ═══
+function initWorkerScreen() {
+  const list = document.getElementById('workerList');
+  list.innerHTML = '';
+  db.workers.forEach(function(w) {
+    const b = document.createElement('button');
+    b.className = 'worker-btn';
+    b.textContent = w;
+    b.onclick = function() { selectWorker(w); };
+    list.appendChild(b);
   });
 }
+function selectWorker(w) {
+  currentWorker = w;
+  document.getElementById('workerScreen').style.display = 'none';
+  document.getElementById('workerBarName').textContent = w;
+}
+function logoutWorker() {
+  currentWorker = null;
+  document.getElementById('workerScreen').style.display = 'flex';
+  initWorkerScreen();
+}
+function addWorker() {
+  const v = document.getElementById('newWorkerInput').value.trim();
+  if (!v || db.workers.includes(v)) return;
+  db.workers.push(v); saveDB();
+  document.getElementById('newWorkerInput').value = '';
+  renderWorkerChips(); initWorkerScreen();
+  showToast('Dodano: ' + v);
+}
+function removeWorker(w) {
+  if (!confirm('Usunąć pracownika "' + w + '"?')) return;
+  db.workers = db.workers.filter(function(x) { return x !== w; });
+  saveDB(); renderWorkerChips(); initWorkerScreen();
+}
+function renderWorkerChips() {
+  const c = document.getElementById('workerChips'); if (!c) return;
+  c.innerHTML = '';
+  db.workers.forEach(function(w) {
+    const span = document.createElement('span');
+    span.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:20px;border:2px solid var(--border);font-size:12px;font-weight:600;background:var(--bg)';
+    span.appendChild(document.createTextNode(w));
+    const x = document.createElement('button');
+    x.textContent = 'x';
+    x.style.cssText = 'border:none;background:none;color:var(--out);font-size:14px;cursor:pointer;padding:0;line-height:1;margin-left:2px';
+    x.onclick = function() { removeWorker(w); };
+    span.appendChild(x);
+    c.appendChild(span);
+  });
+}
+
+// ═══ SCREENS ═══
+function showScreen(n) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('nav button').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById('screen-' + n).classList.add('active');
+  document.getElementById('tab-' + n).classList.add('active');
+  if (n !== 'scan') stopCamera();
+  if (n === 'history') { renderWhFilterChips(); renderHistory(); }
+  if (n === 'stock') { renderStockWhChips(); renderStock(); }
+  if (n === 'products') renderProductsTab();
+  if (n === 'settings') renderSettings();
+}
+
+// ═══ WAREHOUSES ═══
+function renderWhChips() {
+  // scan screen — chips only (select)
+  var scanC = document.getElementById('whChips');
+  if (scanC) {
+    scanC.innerHTML = '';
+    db.warehouses.forEach(function(wh) {
+      const b = document.createElement('button');
+      b.className = 'chip' + (wh === currentWh ? ' sel' : '');
+      b.textContent = wh;
+      b.onclick = function() { currentWh = wh; renderWhChips(); updateHeaderSub(); };
+      scanC.appendChild(b);
+    });
+    const add = document.createElement('button');
+    add.className = 'chip add'; add.textContent = '+';
+    add.onclick = function() { document.getElementById('newWhName').value = ''; document.getElementById('addWhModal').classList.add('open'); };
+    scanC.appendChild(add);
+  }
+  // settings screen — chips with delete x (like workers)
+  var settC = document.getElementById('whChipsSettings');
+  if (settC) {
+    settC.innerHTML = '';
+    db.warehouses.forEach(function(wh) {
+      const span = document.createElement('span');
+      span.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:20px;border:2px solid var(--border);font-size:12px;font-weight:600;background:var(--bg)';
+      span.appendChild(document.createTextNode(wh));
+      const x = document.createElement('button');
+      x.textContent = 'x';
+      x.style.cssText = 'border:none;background:none;color:var(--out);font-size:14px;cursor:pointer;padding:0;line-height:1;margin-left:2px';
+      x.onclick = function() { removeWarehouse(wh); };
+      span.appendChild(x);
+      settC.appendChild(span);
+    });
+    const add = document.createElement('button');
+    add.className = 'chip add'; add.textContent = '+';
+    add.onclick = function() { document.getElementById('newWhName').value = ''; document.getElementById('addWhModal').classList.add('open'); };
+    settC.appendChild(add);
+  }
+}
 function renderWhFilterChips() {
-  const fc = document.getElementById('whFilterChips'); fc.innerHTML = '';
-  [['all','Wszystkie'], ...db.warehouses.map(w=>[w,w])].forEach(([val,label]) => {
+  const fc = document.getElementById('whFilterChips'); if (!fc) return; fc.innerHTML = '';
+  var opts = [['all','Wszystkie']].concat(db.warehouses.map(function(w) { return [w,w]; }));
+  opts.forEach(function(pair) {
     const b = document.createElement('button');
-    b.className = 'filter-chip' + (filterWh === val ? ' active' : '');
-    b.textContent = label;
-    b.onclick = () => { filterWh = val; renderWhFilterChips(); renderHistory(); };
+    b.className = 'fc' + (filterWh === pair[0] ? ' active' : '');
+    b.textContent = pair[1];
+    b.onclick = function() { filterWh = pair[0]; renderWhFilterChips(); renderHistory(); };
+    fc.appendChild(b);
+  });
+}
+function renderStockWhChips() {
+  const fc = document.getElementById('stockWhChips'); if (!fc) return; fc.innerHTML = '';
+  var opts = [['all','Wszystkie']].concat(db.warehouses.map(function(w) { return [w,w]; }));
+  opts.forEach(function(pair) {
+    const b = document.createElement('button');
+    b.className = 'fc' + (stockWh === pair[0] ? ' active' : '');
+    b.textContent = pair[1];
+    b.onclick = function() { stockWh = pair[0]; renderStockWhChips(); renderStock(); };
     fc.appendChild(b);
   });
 }
@@ -396,49 +505,99 @@ function addWarehouse() {
   if (!db.warehouses.includes(v)) { db.warehouses.push(v); saveDB(); }
   currentWh = v; closeWhModal(); renderWhChips(); updateHeaderSub(); showToast('Dodano: ' + v);
 }
+function removeWarehouse(wh) {
+  if (!confirm('Usunąć magazyn "' + wh + '"?')) return;
+  db.warehouses = db.warehouses.filter(function(x) { return x !== wh; });
+  if (currentWh === wh) currentWh = db.warehouses[0] || null;
+  saveDB(); renderWhChips(); updateHeaderSub();
+}
 function closeWhModal() { document.getElementById('addWhModal').classList.remove('open'); }
 function updateHeaderSub() { document.getElementById('headerSub').textContent = currentWh || 'Wybierz magazyn'; }
 
-// ════════════════════════════════════════
-// OPERATION
-// ════════════════════════════════════════
+// ═══ OPERATION ═══
 function setOp(op) {
   currentOp = op;
-  document.getElementById('btnWejscie').classList.toggle('selected', op === 'wejscie');
-  document.getElementById('btnWyjscie').classList.toggle('selected', op === 'wyjscie');
+  document.getElementById('btnW').classList.toggle('sel', op === 'wejscie');
+  document.getElementById('btnO').classList.toggle('sel', op === 'wyjscie');
 }
-function setOpFilter(op) {
+function setOpF(op) {
   filterOp = op;
-  ['all','wejscie','wyjscie'].forEach(x => {
-    const id = x === 'all' ? 'fAll' : x === 'wejscie' ? 'fWejscie' : 'fWyjscie';
-    document.getElementById(id).classList.toggle('active', x === op);
-  });
+  document.getElementById('fAll').classList.toggle('active', op === 'all');
+  document.getElementById('fWej').classList.toggle('active', op === 'wejscie');
+  document.getElementById('fWyj').classList.toggle('active', op === 'wyjscie');
   renderHistory();
 }
 
-// ════════════════════════════════════════
-// BARCODE DETECTOR — native, no library
-// ════════════════════════════════════════
+// ═══ PRODUCT PICKER ═══
+function renderGroupGrid() {
+  const grid = document.getElementById('groupGrid');
+  grid.innerHTML = '';
+  grid.style.display = 'grid';
+  document.getElementById('prodList').style.display = 'none';
+  document.getElementById('backBtn').style.display = 'none';
+  CATALOG.groups.forEach(function(g) {
+    const b = document.createElement('button');
+    b.className = 'group-btn';
+    b.textContent = g.name;
+    b.onclick = function() { selectGroup(g.id); };
+    grid.appendChild(b);
+  });
+}
+function selectGroup(gid) {
+  selectedGroup = gid;
+  const prods = CATALOG.products.filter(function(p) { return p.groupId === gid; });
+  showProdList(prods);
+}
+function showGroups() {
+  selectedGroup = null;
+  document.getElementById('prodSearch').value = '';
+  renderGroupGrid();
+}
+function filterProducts() {
+  const q = document.getElementById('prodSearch').value.toLowerCase().trim();
+  if (!q) { showGroups(); return; }
+  const prods = CATALOG.products.filter(function(p) {
+    return p.name.toLowerCase().indexOf(q) >= 0 || p.group.toLowerCase().indexOf(q) >= 0;
+  });
+  showProdList(prods);
+}
+function showProdList(prods) {
+  document.getElementById('groupGrid').style.display = 'none';
+  document.getElementById('backBtn').style.display = 'inline-block';
+  const list = document.getElementById('prodList');
+  list.style.display = 'flex';
+  if (!prods.length) { list.innerHTML = '<div class="empty">Brak produktów</div>'; return; }
+  list.innerHTML = prods.map(function(p) {
+    return '<div class="prod-item" onclick="selectProduct(\'' + p.id + '\')">' +
+      '<div class="prod-name">' + escHtml(p.name) + '</div>' +
+      '<div class="prod-meta">' + escHtml(p.group) + ' &middot; ' + p.weight + ' ' + p.unit + (p.barcode ? ' &middot; ' + p.barcode : '') + '</div>' +
+      '</div>';
+  }).join('');
+}
+function selectProduct(pid) {
+  const p = CATALOG.products.find(function(x) { return x.id === pid; });
+  if (!p) return;
+  if (!currentWh) { showToast('Najpierw wybierz magazyn!'); return; }
+  if (!currentWorker) { showToast('Najpierw wybierz pracownika!'); logoutWorker(); return; }
+  openConfirmModal(p);
+}
+
+// ═══ CAMERA ═══
 async function getDetector() {
   if (detector) return detector;
   if (!('BarcodeDetector' in window)) return null;
   try {
     const formats = await BarcodeDetector.getSupportedFormats();
-    detector = new BarcodeDetector({ formats });
+    detector = new BarcodeDetector({ formats: formats });
     return detector;
   } catch(e) { return null; }
 }
-
 async function startCamera() {
   if (cameraActive) return;
   if (!currentWh) { showToast('Najpierw wybierz magazyn!'); return; }
-
+  if (!currentWorker) { showToast('Najpierw zaloguj się!'); logoutWorker(); return; }
   const det = await getDetector();
-  if (!det) {
-    showToast('Ten telefon/przeglądarka nie obsługuje BarcodeDetector. Użyj trybu zdjęcia.');
-    return;
-  }
-
+  if (!det) { showToast('Kamera niedostępna — użyj listy produktów'); return; }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
@@ -446,334 +605,231 @@ async function startCamera() {
     const video = document.getElementById('video');
     video.srcObject = stream;
     await video.play();
-
-    document.getElementById('cameraWrap').style.display = 'block';
+    document.getElementById('camWrap').style.display = 'block';
     document.getElementById('camStartBtn').style.display = 'none';
     document.getElementById('camStopBtn').style.display = 'block';
     cameraActive = true;
-
-    // scan loop — runs every 300ms
-    scanLoop = setInterval(async () => {
+    scanLoop = setInterval(async function() {
       if (!cameraActive) return;
       try {
         const results = await det.detect(video);
-        if (results && results.length > 0) {
-          const code = results[0].rawValue;
-          if (code) {
-            if (navigator.vibrate) navigator.vibrate(80);
-            stopCamera();
-            handleCode(code);
-          }
+        if (results && results.length > 0 && results[0].rawValue) {
+          if (navigator.vibrate) navigator.vibrate(80);
+          stopCamera();
+          handleBarcode(results[0].rawValue);
         }
-      } catch(e) { /* ignore frame errors */ }
+      } catch(e) {}
     }, 300);
-
   } catch(e) {
     cameraActive = false;
-    document.getElementById('cameraWrap').style.display = 'none';
+    document.getElementById('camWrap').style.display = 'none';
     document.getElementById('camStartBtn').style.display = 'flex';
     document.getElementById('camStopBtn').style.display = 'none';
     if (e.name === 'NotAllowedError') showToast('Brak zgody na kamerę — zezwól w ustawieniach Chrome');
-    else if (e.name === 'NotFoundError') showToast('Nie znaleziono kamery');
-    else showToast('Błąd kamery: ' + (e.message || e.name));
+    else showToast('Błąd: ' + (e.message || e.name));
   }
 }
-
 function stopCamera() {
   cameraActive = false;
   if (scanLoop) { clearInterval(scanLoop); scanLoop = null; }
   const v = document.getElementById('video');
-  if (v.srcObject) { v.srcObject.getTracks().forEach(t => t.stop()); v.srcObject = null; }
-  document.getElementById('cameraWrap').style.display = 'none';
+  if (v.srcObject) { v.srcObject.getTracks().forEach(function(t) { t.stop(); }); v.srcObject = null; }
+  document.getElementById('camWrap').style.display = 'none';
   document.getElementById('camStartBtn').style.display = 'flex';
   document.getElementById('camStopBtn').style.display = 'none';
 }
-
-// ════════════════════════════════════════
-// CAPTURE FALLBACK — zdjęcie → BarcodeDetector
-// ════════════════════════════════════════
-async function handleCapture(event) {
-  const file = event.target.files[0]; event.target.value = '';
-  if (!file) return;
-  if (!currentWh) { showToast('Najpierw wybierz magazyn!'); return; }
-
-  showToast('Dekodowanie zdjęcia...');
-
-  const det = await getDetector();
-  if (!det) { showToast('BarcodeDetector niedostępny na tym urządzeniu'); return; }
-
-  try {
-    const bmp = await createImageBitmap(file);
-    const results = await det.detect(bmp);
-    if (results && results.length > 0) {
-      if (navigator.vibrate) navigator.vibrate(80);
-      handleCode(results[0].rawValue);
-    } else {
-      showToast('Nie znaleziono kodu — spróbuj bliżej lub z lepszym oświetleniem');
-    }
-  } catch(e) {
-    showToast('Błąd dekodowania: ' + (e.message || e));
-  }
-}
-
-// ════════════════════════════════════════
-// MANUAL
-// ════════════════════════════════════════
-function handleManualScan() {
+function handleManual() {
   const v = document.getElementById('manualInput').value.trim(); if (!v) return;
-  if (!currentWh) { showToast('Najpierw wybierz magazyn!'); return; }
   document.getElementById('manualInput').value = '';
-  handleCode(v);
+  handleBarcode(v);
 }
-
-// ════════════════════════════════════════
-// HANDLE CODE
-// ════════════════════════════════════════
-function handleCode(code) {
-  pendingCode = code;
-  if (db.products[code]) {
-    const p = db.products[code];
-    document.getElementById('knownProductTitle').textContent = p.name;
-    document.getElementById('knownCodeDisplay').textContent = code;
-    document.getElementById('knownWhDisplay').textContent = currentWh;
-    document.getElementById('knownProductQty').value = 1;
-    const btn = document.getElementById('knownConfirmBtn');
-    btn.textContent = 'Potwierdź ' + (currentOp === 'wejscie' ? 'WEJŚCIE' : 'WYJŚCIE');
-    btn.style.background = currentOp === 'wejscie' ? 'var(--in-color)' : 'var(--out-color)';
-    document.getElementById('knownProductModal').classList.add('open');
+function handleBarcode(code) {
+  if (!currentWh) { showToast('Najpierw wybierz magazyn!'); return; }
+  if (!currentWorker) { showToast('Najpierw zaloguj się!'); logoutWorker(); return; }
+  const p = CATALOG.products.find(function(x) { return x.barcode === code; });
+  if (p) {
+    openConfirmModal(p);
   } else {
-    document.getElementById('modalCodeDisplay').textContent = code;
-    document.getElementById('newProductName').value = '';
-    document.getElementById('newProductQty').value = 1;
-    updateRegisterBtn();
-    document.getElementById('newProductModal').classList.add('open');
-    setTimeout(() => document.getElementById('newProductName').focus(), 350);
+    openConfirmModal({ id: 'bc_' + code, name: code, group: 'Kod kreskowy', unit: 'szt', weight: 1, barcode: code });
   }
 }
-function updateRegisterBtn() {
-  const ok = document.getElementById('newProductName').value.trim().length > 0;
-  const btn = document.getElementById('registerBtn');
-  btn.disabled = !ok; btn.style.opacity = ok ? '1' : '0.5';
+
+// ═══ CONFIRM MODAL ═══
+function openConfirmModal(p) {
+  pendingProduct = p;
+  document.getElementById('cmTitle').textContent = currentOp === 'wejscie' ? 'Potwierdź WEJŚCIE' : 'Potwierdź WYJŚCIE';
+  document.getElementById('cmProduct').textContent = p.name;
+  document.getElementById('cmGroup').textContent = p.group;
+  document.getElementById('cmWh').textContent = currentWh;
+  document.getElementById('cmWorker').textContent = currentWorker;
+  document.getElementById('cmQty').value = 1;
+  document.getElementById('cmUnit').textContent = p.unit || 'szt';
+  document.getElementById('cmConfirmBtn').style.background = currentOp === 'wejscie' ? 'var(--in)' : 'var(--out)';
+  document.getElementById('confirmModal').classList.add('open');
+  setTimeout(function() { document.getElementById('cmQty').focus(); }, 300);
 }
-function registerProduct() {
-  const name = document.getElementById('newProductName').value.trim();
-  const qty = parseInt(document.getElementById('newProductQty').value) || 1;
-  if (!name) return;
-  db.products[pendingCode] = { name, firstSeen: Date.now() };
-  addHistory(pendingCode, name, qty);
-  closeModal();
+function confirmOp() {
+  const qty = parseInt(document.getElementById('cmQty').value) || 1;
+  addHistory(pendingProduct, qty);
+  closeConfirm();
 }
-function confirmKnown() {
-  const qty = parseInt(document.getElementById('knownProductQty').value) || 1;
-  addHistory(pendingCode, db.products[pendingCode].name, qty);
-  closeKnownModal();
+function closeConfirm() {
+  document.getElementById('confirmModal').classList.remove('open');
+  pendingProduct = null;
 }
-function addHistory(code, name, qty) {
-  const entry = { id: Date.now()+'_'+Math.random().toString(36).slice(2), code, name, op: currentOp, wh: currentWh, qty, ts: Date.now(), synced: false };
+
+// ═══ ADD HISTORY ═══
+function addHistory(p, qty) {
+  const signedQty = currentOp === 'wejscie' ? qty : -qty;
+  const entry = {
+    id: Date.now() + '_' + Math.random().toString(36).slice(2),
+    productId: p.id, barcode: p.barcode || '',
+    name: p.name, group: p.group,
+    op: currentOp, wh: currentWh, worker: currentWorker,
+    qty: signedQty, unit: p.unit || 'szt',
+    ts: Date.now()
+  };
   db.history.unshift(entry);
-  db.pending.push(entry.id);
   saveDB();
   showResultFlash(entry);
-  showToast(currentOp === 'wejscie' ? 'Zarejestrowano WEJŚCIE' : 'Zarejestrowano WYJŚCIE');
-  syncEntry(entry);
+  var sign = signedQty > 0 ? '+' : '';
+  showToast(currentOp === 'wejscie' ? 'Zarejestrowano WEJŚCIE ' + sign + signedQty : 'Zarejestrowano WYJŚCIE ' + signedQty);
 }
 function showResultFlash(e) {
   const r = document.getElementById('scanResult'); r.style.display = 'block';
-  r.innerHTML = `<div class="result-flash ${e.op}">
-    <div class="result-code">${escHtml(e.code)}</div>
-    <div class="result-name">${escHtml(e.name)}</div>
-    <div class="result-meta">${escHtml(e.wh)} &middot; ${e.qty} szt. &middot; ${fmtTime(e.ts)}</div>
-    <span class="result-badge ${e.op}">${e.op==='wejscie'?'WEJŚCIE':'WYJŚCIE'}</span>
-  </div>`;
-}
-function closeModal() { document.getElementById('newProductModal').classList.remove('open'); pendingCode = null; }
-function closeKnownModal() { document.getElementById('knownProductModal').classList.remove('open'); pendingCode = null; }
-
-// ════════════════════════════════════════
-// GOOGLE SHEETS SYNC
-// ════════════════════════════════════════
-async function syncEntry(entry) {
-  if (!db.webhookUrl) return;
-  try {
-    await fetch(db.webhookUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ action:'addRow', data: {
-        id:entry.id, date:new Date(entry.ts).toLocaleDateString('pl-PL'),
-        time:new Date(entry.ts).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
-        code:entry.code, name:entry.name, op:entry.op, wh:entry.wh, qty:entry.qty
-      }})
-    });
-    markSynced(entry.id); saveDB();
-  } catch(e) {}
-  updateSyncUI();
-}
-async function syncPending() {
-  if (!db.webhookUrl) { showToast('Najpierw zapisz URL webhook'); return; }
-  if (!db.pending.length) { showToast('Brak oczekujących wpisów'); return; }
-  showToast('Wysyłanie ' + db.pending.length + ' wpisów...');
-  const ids = [...db.pending]; let sent = 0;
-  for (const id of ids) {
-    const entry = db.history.find(h => h.id === id);
-    if (!entry) { markSynced(id); continue; }
-    try {
-      await fetch(db.webhookUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ action:'addRow', data: {
-          id:entry.id, date:new Date(entry.ts).toLocaleDateString('pl-PL'),
-          time:new Date(entry.ts).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
-          code:entry.code, name:entry.name, op:entry.op, wh:entry.wh, qty:entry.qty
-        }})
-      });
-      markSynced(id); sent++;
-    } catch(e) {}
-  }
-  saveDB(); showToast('Wysłano ' + sent + ' z ' + ids.length + ' wpisów'); updateSyncUI();
-}
-function markSynced(id) {
-  const e = db.history.find(h => h.id === id); if (e) e.synced = true;
-  db.pending = db.pending.filter(p => p !== id);
-}
-function updateSyncUI() {
-  const p = db.pending.length, hw = !!db.webhookUrl;
-  const dotClass = !hw ? 'off' : p === 0 ? 'ok' : 'warn';
-  const text = !hw ? 'Sheets: nie skonfigurowano' : p === 0 ? 'Sheets: zsynchronizowano' : 'Sheets: ' + p + ' wpisów oczekuje';
-  ['syncDot','settingsSyncDot'].forEach(id => { const el=document.getElementById(id); if(el) el.className='sync-dot '+dotClass; });
-  ['syncStatusText','settingsSyncText'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=text; });
-  const card = document.getElementById('syncStatusCard'); if (card) card.style.display = hw ? 'block' : 'none';
-  const pi = document.getElementById('pendingInfo');
-  if (pi) pi.textContent = p > 0 ? p + ' wpisów nie wysłanych. Kliknij "Wyślij oczekujące wpisy" gdy masz internet.' : 'Wszystkie wpisy zsynchronizowane.';
+  const sign = e.qty > 0 ? '+' : '';
+  r.innerHTML = '<div class="result-flash ' + (e.op === 'wejscie' ? 'win' : 'wout') + '">' +
+    '<div class="rc">' + escHtml(e.group) + '</div>' +
+    '<div class="rn">' + escHtml(e.name) + '</div>' +
+    '<div class="rm">' + escHtml(e.wh) + ' &middot; ' + escHtml(e.worker) + ' &middot; ' + sign + e.qty + ' ' + e.unit + ' &middot; ' + fmtTime(e.ts) + '</div>' +
+    '<span class="rb ' + (e.op === 'wejscie' ? 'win' : 'wout') + '">' + (e.op === 'wejscie' ? 'WEJŚCIE' : 'WYJŚCIE') + '</span>' +
+    '</div>';
 }
 
-// ════════════════════════════════════════
-// HISTORY
-// ════════════════════════════════════════
+// ═══ HISTORY ═══
 function renderHistory() {
-  const list = document.getElementById('historyList');
-  let items = db.history;
-  if (filterWh !== 'all') items = items.filter(i => i.wh === filterWh);
-  if (filterOp !== 'all') items = items.filter(i => i.op === filterOp);
-  if (!items.length) { list.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9 9h.01M15 9h.01M9 15s1 1.5 3 1.5 3-1.5 3-1.5"/></svg>Brak wpisów</div>`; return; }
-  list.innerHTML = items.map(i => `
-    <div class="history-item ${i.op}">
-      <div class="hi-icon ${i.op}">${i.op==='wejscie'
-        ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'
-        : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>'}</div>
-      <div class="hi-info">
-        <div class="hi-name">${escHtml(i.name)}</div>
-        <div class="hi-code">${escHtml(i.code)} &middot; ${i.qty} szt.</div>
-      </div>
-      <div class="hi-meta">
-        <div class="hi-time">${fmtTime(i.ts)}</div>
-        <div class="hi-wh">${escHtml(i.wh)}${i.synced?'':' <span style="color:var(--accent2);font-size:9px;font-weight:800;">LOK</span>'}</div>
-      </div>
-    </div>`).join('');
-}
-
-// ════════════════════════════════════════
-// PRODUCTS
-// ════════════════════════════════════════
-function renderProducts() {
-  const q = (document.getElementById('productSearch')?.value||'').toLowerCase();
-  const list = document.getElementById('productList');
-  const entries = Object.entries(db.products).filter(([c,p]) => !q||c.includes(q)||p.name.toLowerCase().includes(q));
-  if (!entries.length) { list.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Brak produktów</div>`; return; }
-  list.innerHTML = entries.map(([code,p]) => {
-    const cnt = db.history.filter(h=>h.code===code).length;
-    const sc = code.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    return `<div class="product-item">
-      <div class="product-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
-      <div class="product-info"><div class="product-name">${escHtml(p.name)}</div><div class="product-code">${escHtml(code)}</div><div class="product-count">${cnt} operacji</div></div>
-      <button class="delete-btn" onclick="deleteProduct('${sc}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
-    </div>`;
+  const list = document.getElementById('histList');
+  var items = db.history;
+  if (filterWh !== 'all') items = items.filter(function(i) { return i.wh === filterWh; });
+  if (filterOp !== 'all') items = items.filter(function(i) { return i.op === filterOp; });
+  if (!items.length) { list.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/></svg>Brak wpisów</div>'; return; }
+  list.innerHTML = items.map(function(i) {
+    var sign = i.qty > 0 ? '+' : '';
+    var opClass = i.op === 'wejscie' ? 'win' : 'wout';
+    var icon = i.op === 'wejscie'
+      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>';
+    return '<div class="hi ' + opClass + '">' +
+      '<div class="hii ' + opClass + '">' + icon + '</div>' +
+      '<div class="hif"><div class="hin">' + escHtml(i.name) + '</div>' +
+      '<div class="hic">' + escHtml(i.worker || '') + ' &middot; ' + sign + i.qty + ' ' + (i.unit||'szt') + '</div></div>' +
+      '<div class="him"><div class="hit">' + fmtTime(i.ts) + '</div>' +
+      '<div class="hiw">' + escHtml(i.wh) + '</div></div>' +
+      '</div>';
   }).join('');
 }
-function deleteProduct(code) {
-  if (!confirm('Usunąć "' + (db.products[code]?.name||code) + '"?')) return;
-  delete db.products[code]; saveDB(); renderProducts(); showToast('Usunięto');
+
+// ═══ STOCK ═══
+function renderStock() {
+  var q = (document.getElementById('stockSearch') ? document.getElementById('stockSearch').value : '').toLowerCase();
+  var list = document.getElementById('stockList');
+  var stockMap = {};
+  db.history.forEach(function(i) {
+    if (stockWh !== 'all' && i.wh !== stockWh) return;
+    var key = i.name + '||' + i.group;
+    if (!stockMap[key]) stockMap[key] = { name: i.name, group: i.group || '', unit: i.unit || 'szt', qty: 0 };
+    stockMap[key].qty += i.qty;
+  });
+  var entries = Object.values(stockMap);
+  if (q) entries = entries.filter(function(e) { return e.name.toLowerCase().indexOf(q) >= 0 || e.group.toLowerCase().indexOf(q) >= 0; });
+  entries.sort(function(a,b) { return a.group.localeCompare(b.group) || a.name.localeCompare(b.name); });
+  if (!entries.length) { list.innerHTML = '<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="6" height="18" rx="1"/><rect x="9" y="8" width="6" height="13" rx="1"/></svg>Brak danych magazynowych</div>'; return; }
+  list.innerHTML = entries.map(function(e) {
+    var qClass = e.qty > 0 ? 'pos' : e.qty < 0 ? 'neg' : 'zero';
+    var sign = e.qty > 0 ? '+' : '';
+    return '<div class="stock-item">' +
+      '<div class="si-info"><div class="si-name">' + escHtml(e.name) + '</div><div class="si-group">' + escHtml(e.group) + '</div></div>' +
+      '<div class="si-qty ' + qClass + '">' + sign + e.qty + '</div>' +
+      '<div class="si-unit">' + escHtml(e.unit) + '</div>' +
+      '</div>';
+  }).join('');
 }
 
-// ════════════════════════════════════════
-// SETTINGS
-// ════════════════════════════════════════
+// ═══ PRODUCTS TAB ═══
+function renderProductsTab() {
+  var q = (document.getElementById('productSearch') ? document.getElementById('productSearch').value : '').toLowerCase();
+  var list = document.getElementById('productList');
+  var prods = CATALOG.products;
+  if (q) prods = prods.filter(function(p) { return p.name.toLowerCase().indexOf(q) >= 0 || p.group.toLowerCase().indexOf(q) >= 0 || (p.barcode||'').indexOf(q) >= 0; });
+  if (!prods.length) { list.innerHTML = '<div class="empty">Brak produktów</div>'; return; }
+  var shown = prods.slice(0, 100);
+  list.innerHTML = shown.map(function(p) {
+    return '<div style="background:var(--surface);border-radius:var(--r);padding:10px 13px;box-shadow:var(--sh)">' +
+      '<div style="font-size:13px;font-weight:700">' + escHtml(p.name) + '</div>' +
+      '<div style="font-size:10px;color:var(--ink2);margin-top:2px">' + escHtml(p.group) + ' &middot; ' + p.weight + ' ' + p.unit + (p.barcode ? ' &middot; <strong>' + escHtml(p.barcode) + '</strong>' : ' &middot; <em>brak kodu</em>') + '</div>' +
+      '</div>';
+  }).join('') + (prods.length > 100 ? '<div style="text-align:center;padding:12px;font-size:12px;color:var(--ink2)">Pokazano 100 z ' + prods.length + '. Wpisz więcej liter aby zawęzić.</div>' : '');
+}
+
+// ═══ SETTINGS ═══
 function renderSettings() {
-  document.getElementById('emailInput').value = db.email||'';
-  document.getElementById('webhookInput').value = db.webhookUrl||'';
-  renderWhChips(); updateSyncUI(); updateLocalDataInfo();
+  renderWorkerChips(); renderWhChips(); updateLocalInfo();
 }
-function saveEmail() { db.email = document.getElementById('emailInput').value.trim(); saveDB(); showToast('Adres e-mail zapisany'); }
-function saveWebhook() {
-  db.webhookUrl = document.getElementById('webhookInput').value.trim(); saveDB();
-  showToast(db.webhookUrl ? 'Webhook zapisany' : 'Webhook usunięty');
-  updateSyncUI(); if (db.webhookUrl && db.pending.length) syncPending();
+function updateLocalInfo() {
+  var el = document.getElementById('localInfo'); if (!el) return;
+  el.textContent = 'Wpisów w historii: ' + db.history.length;
 }
-function updateLocalDataInfo() {
-  const el = document.getElementById('localDataInfo'); if (!el) return;
-  el.textContent = `Wpisów: ${db.history.length} | Produktów: ${Object.keys(db.products).length} | Oczekujących: ${db.pending.length}`;
-}
-function clearAllData() {
-  if (!confirm('Usunąć WSZYSTKIE dane lokalne? Tej operacji nie można cofnąć.')) return;
-  localStorage.removeItem('mscan_v3');
+function clearData() {
+  if (!confirm('Usunąć WSZYSTKIE dane lokalne?')) return;
+  localStorage.removeItem('mscan_v4');
   db = loadDB(); currentWh = null;
-  renderWhChips(); updateHeaderSub(); updateSyncUI(); updateLocalDataInfo();
-  showToast('Dane lokalne wyczyszczone');
+  renderWhChips(); updateHeaderSub(); updateLocalInfo();
+  showToast('Dane wyczyszczone');
 }
 
-// ════════════════════════════════════════
-// CSV + EMAIL
-// ════════════════════════════════════════
-function filteredItems() {
-  let items = db.history;
-  if (filterWh !== 'all') items = items.filter(i=>i.wh===filterWh);
-  if (filterOp !== 'all') items = items.filter(i=>i.op===filterOp);
-  return items;
-}
+// ═══ CSV ═══
 function exportCSV() {
-  const items = filteredItems(); if (!items.length) { showToast('Brak danych'); return; }
-  const hdr = 'Data;Czas;Kod;Nazwa;Operacja;Magazyn;Ilość\n';
-  const rows = items.map(i => {
-    const d = new Date(i.ts);
-    return [d.toLocaleDateString('pl-PL'), d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit',second:'2-digit'}), i.code, i.name, i.op, i.wh, i.qty]
-      .map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';');
+  var items = db.history;
+  if (filterWh !== 'all') items = items.filter(function(i) { return i.wh === filterWh; });
+  if (filterOp !== 'all') items = items.filter(function(i) { return i.op === filterOp; });
+  if (!items.length) { showToast('Brak danych'); return; }
+  var hdr = 'Data;Czas;Kod kreskowy;Nazwa produktu;Grupa;Operacja;Ilość;Jednostka;Magazyn;Pracownik\n';
+  var rows = items.map(function(i) {
+    var d = new Date(i.ts);
+    var sign = i.qty > 0 ? '+' : '';
+    return [
+      d.toLocaleDateString('pl-PL'),
+      d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),
+      i.barcode ? '="' + i.barcode + '"' : '',
+      i.name, i.group || '', i.op,
+      sign + i.qty, i.unit || 'szt', i.wh, i.worker || ''
+    ].map(function(v) { return '"' + String(v).replace(/"/g,'""') + '"'; }).join(';');
   }).join('\n');
-  const blob = new Blob(['\uFEFF'+hdr+rows],{type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download='magazyn_'+new Date().toISOString().slice(0,10)+'.csv';
+  var blob = new Blob(['\uFEFF' + hdr + rows], {type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'magazyn_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click(); URL.revokeObjectURL(url); showToast('Plik CSV gotowy');
 }
-function sendCsvByEmail() {
-  const items = filteredItems(); if (!items.length) { showToast('Brak danych'); return; }
-  const date = new Date().toLocaleDateString('pl-PL');
-  const subject = encodeURIComponent('Raport magazynowy ' + date);
-  const lines = ['Raport MagazynScan — '+date,'','Operacji: '+items.length,
-    'Wejść: '+items.filter(i=>i.op==='wejscie').length,'Wyjść: '+items.filter(i=>i.op==='wyjscie').length,'',
-    'Ostatnie 10:',
-    ...items.slice(0,10).map(i=>{const d=new Date(i.ts);return d.toLocaleDateString('pl-PL')+' '+d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})+' | '+(i.op==='wejscie'?'WEJ':'WYJ')+' | '+i.name+' ('+i.qty+' szt.) | '+i.wh;}),
-    '','Pełny CSV — pobierz przyciskiem "Pobierz CSV" i dołącz jako załącznik.'
-  ];
-  exportCSV();
-  window.location.href = 'mailto:' + (db.email||'') + '?subject=' + subject + '&body=' + encodeURIComponent(lines.join('\n'));
-  showToast('Otwieranie klienta pocztowego...');
-}
 
-// ════════════════════════════════════════
-// UTILS
-// ════════════════════════════════════════
+// ═══ UTILS ═══
 function fmtTime(ts) {
-  const d = new Date(ts);
-  if (d.toDateString()===new Date().toDateString()) return d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
-  return d.toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+  var d = new Date(ts);
+  if (d.toDateString() === new Date().toDateString()) return d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
 }
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-let _t;
+var _t;
 function showToast(msg) {
-  const t = document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
-  clearTimeout(_t); _t=setTimeout(()=>t.classList.remove('show'),2600);
+  var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(_t); _t = setTimeout(function() { t.classList.remove('show'); }, 2600);
 }
 
-// ════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════
+// ═══ INIT ═══
+initWorkerScreen();
 renderWhChips();
 updateHeaderSub();
-updateSyncUI();
+renderGroupGrid();
 </script>
 </body>
 </html>
