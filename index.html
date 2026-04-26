@@ -390,6 +390,7 @@ nav button.active{color:var(--accent);border-bottom:2px solid var(--accent);marg
   <div class="modal">
     <h2 id="cmTitle">Potwierdź operację</h2>
     <div><label class="mlabel">Produkt</label><div class="mcode" id="cmProduct">—</div></div>
+    <div><label class="mlabel">Kod produktu</label><div class="mcode" id="cmBarcode" style="letter-spacing:1.5px;font-family:'Courier New',monospace">—</div></div>
     <div><label class="mlabel">Grupa</label><div class="mcode" id="cmGroup">—</div></div>
     <div><label class="mlabel">Magazyn</label><div class="mcode" id="cmWh">—</div></div>
     <div><label class="mlabel">Pracownik</label><div class="mcode" id="cmWorker">—</div></div>
@@ -765,6 +766,7 @@ function openConfirmModal(p) {
   pendingProduct = p;
   document.getElementById('cmTitle').textContent = currentOp === 'wejscie' ? 'Potwierdź WEJŚCIE' : 'Potwierdź WYJŚCIE';
   document.getElementById('cmProduct').textContent = p.name;
+  document.getElementById('cmBarcode').textContent = p.barcode || 'brak kodu';
   document.getElementById('cmGroup').textContent = p.group;
   document.getElementById('cmWh').textContent = currentWh;
   document.getElementById('cmWorker').textContent = currentWorker;
